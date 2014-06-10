@@ -1,0 +1,7 @@
+env=Environment()
+
+env.ParseConfig("llvm-config-3.5 --cppflags --cflags")
+
+env.Append(CPPFLAGS='-Iinclude')
+env.SharedLibrary('libprofile',['BasicBlockTracing.c','CommonProfiling.c','PathProfiling.c','EdgeProfiling.c','OptimalEdgeProfiling.c'])
+
