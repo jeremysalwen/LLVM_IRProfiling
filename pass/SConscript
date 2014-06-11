@@ -1,5 +1,5 @@
 env=Environment()
 
 env.ParseConfig("llvm-config-3.5 --cppflags --cxxflags")
-
-env.SharedLibrary('IRProfiling',['EdgeProfiling.cpp','ProfilingUtils.cpp']) 
+env.Append(CPPFLAGS='-Iinclude')
+env.SharedLibrary('IRProfiling',['EdgeProfiling.cpp','OptimalEdgeProfiling.cpp','ProfilingUtils.cpp']) 

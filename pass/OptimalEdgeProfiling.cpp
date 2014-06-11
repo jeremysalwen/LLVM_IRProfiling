@@ -19,14 +19,16 @@
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/Analysis/Passes.h"
-#include "llvm/Analysis/ProfileInfo.h"
-#include "llvm/Analysis/ProfileInfoLoader.h"
+#include "Passes.h"
+#include "ProfileInfo.h"
+#include "ProfileInfoLoader.h"
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
+
 using namespace llvm;
 
 STATISTIC(NumEdgesInserted, "The # of edges inserted.");
@@ -37,7 +39,6 @@ namespace {
   public:
     static char ID; // Pass identification, replacement for typeid
     OptimalEdgeProfiler() : ModulePass(ID) {
-      initializeOptimalEdgeProfilerPass(*PassRegistry::getPassRegistry());
     }
 
     void getAnalysisUsage(AnalysisUsage &AU) const {
@@ -52,18 +53,9 @@ namespace {
 }
 
 char OptimalEdgeProfiler::ID = 0;
-INITIALIZE_PASS_BEGIN(OptimalEdgeProfiler, "insert-optimal-edge-profiling",
-                "Insert optimal instrumentation for edge profiling",
-                false, false)
-INITIALIZE_PASS_DEPENDENCY(ProfileEstimatorPass)
-INITIALIZE_AG_DEPENDENCY(ProfileInfo)
-INITIALIZE_PASS_END(OptimalEdgeProfiler, "insert-optimal-edge-profiling",
-                "Insert optimal instrumentation for edge profiling",
-                false, false)
 
-ModulePass *llvm::createOptimalEdgeProfilerPass() {
-  return new OptimalEdgeProfiler();
-}
+static llvm::RegisterPass<OptimalEdgeProfiler> X("insert-optimal-edge-profiling", "Insert optimal instrumentation for edge profiling", false, false);
+
 
 inline static void printEdgeCounter(ProfileInfo::Edge e,
                                     BasicBlock* b,
