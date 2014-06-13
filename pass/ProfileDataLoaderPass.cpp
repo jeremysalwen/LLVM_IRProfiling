@@ -15,10 +15,10 @@
 //
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "profile-metadata-loader"
-#include "llvm/Analysis/Passes.h"
+#include "Passes.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Statistic.h"
-#include "llvm/Analysis/ProfileDataLoader.h"
+#include "ProfileDataLoader.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/LLVMContext.h"

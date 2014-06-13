@@ -12,9 +12,9 @@
 //
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "profile-estimator"
-#include "llvm/Analysis/Passes.h"
+#include "Passes.h"
 #include "llvm/Analysis/LoopInfo.h"
-#include "llvm/Analysis/ProfileInfo.h"
+#include "ProfileInfo.h"
 #include "llvm/Pass.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
@@ -40,7 +40,7 @@ namespace {
     static char ID; // Class identification, replacement for typeinfo
     explicit ProfileEstimatorPass(const double execcount = 0)
         : FunctionPass(ID), ExecCount(execcount) {
-      initializeProfileEstimatorPassPass(*PassRegistry::getPassRegistry());
+     // initializeProfileEstimatorPassPass(*PassRegistry::getPassRegistry());
       if (execcount == 0) ExecCount = LoopWeight;
     }
 
@@ -73,15 +73,13 @@ namespace {
 }  // End of anonymous namespace
 
 char ProfileEstimatorPass::ID = 0;
-INITIALIZE_AG_PASS_BEGIN(ProfileEstimatorPass, ProfileInfo, "profile-estimator",
-                "Estimate profiling information", false, true, false)
-INITIALIZE_PASS_DEPENDENCY(LoopInfo)
-INITIALIZE_AG_PASS_END(ProfileEstimatorPass, ProfileInfo, "profile-estimator",
-                "Estimate profiling information", false, true, false)
+
+static llvm::RegisterPass<ProfileEstimatorPass> X("profile-estimator", "Estimate profiling information",true, true);
+static llvm::RegisterAnalysisGroup<ProfileInfo> Y(X);
 
 namespace llvm {
   char &ProfileEstimatorPassID = ProfileEstimatorPass::ID;
-
+}
   FunctionPass *createProfileEstimatorPass() {
     return new ProfileEstimatorPass();
   }
@@ -91,8 +89,6 @@ namespace llvm {
   Pass *createProfileEstimatorPass(const unsigned execcount) {
     return new ProfileEstimatorPass(execcount);
   }
-}
-
 static double ignoreMissing(double w) {
   if (w == ProfileInfo::MissingValue) return 0;
   return w;

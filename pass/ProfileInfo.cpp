@@ -12,13 +12,13 @@
 //
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "profile-info"
-#include "llvm/Analysis/ProfileInfo.h"
+#include "ProfileInfo.h"
 #include "llvm/ADT/SmallSet.h"
-#include "llvm/Analysis/Passes.h"
+#include "Passes.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/IR/CFG.h"
 #include <limits>
 #include <queue>
 #include <set>
@@ -29,7 +29,7 @@ namespace llvm {
 }
 
 // Register the ProfileInfo interface, providing a nice name to refer to.
-INITIALIZE_ANALYSIS_GROUP(ProfileInfo, "Profile Information", NoProfileInfo)
+static RegisterAnalysisGroup<ProfileInfo> P("Profile Information");
 
 namespace llvm {
 
@@ -1052,7 +1052,6 @@ namespace {
   struct NoProfileInfo : public ImmutablePass, public ProfileInfo {
     static char ID; // Class identification, replacement for typeinfo
     NoProfileInfo() : ImmutablePass(ID) {
-      initializeNoProfileInfoPass(*PassRegistry::getPassRegistry());
     }
     
     /// getAdjustedAnalysisPointer - This method is used when a pass implements
@@ -1069,11 +1068,13 @@ namespace {
       return "NoProfileInfo";
     }
   };
+
+
 }  // End of anonymous namespace
 
+	// Register this pass...
 char NoProfileInfo::ID = 0;
-// Register this pass...
-INITIALIZE_AG_PASS(NoProfileInfo, ProfileInfo, "no-profile",
-                   "No Profile Information", false, true, true)
+static llvm::RegisterPass<NoProfileInfo> X("no-profile", "No Profile Information", true, true);
+static llvm::RegisterAnalysisGroup<ProfileInfo,true> Y(X);
 
 ImmutablePass *llvm::createNoProfileInfoPass() { return new NoProfileInfo(); }
