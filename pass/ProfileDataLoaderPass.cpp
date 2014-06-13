@@ -26,7 +26,7 @@
 #include "llvm/IR/Metadata.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/IR/CFG.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Format.h"
@@ -50,7 +50,6 @@ namespace {
     static char ID; // Class identification, replacement for typeinfo
     explicit ProfileMetadataLoaderPass(const std::string &filename = "")
         : ModulePass(ID), Filename(filename) {
-      initializeProfileMetadataLoaderPassPass(*PassRegistry::getPassRegistry());
       if (filename.empty()) Filename = ProfileMetadataFilename;
     }
 
@@ -72,22 +71,11 @@ namespace {
 }  // End of anonymous namespace
 
 char ProfileMetadataLoaderPass::ID = 0;
-INITIALIZE_PASS_BEGIN(ProfileMetadataLoaderPass, "profile-metadata-loader",
-              "Load profile information from llvmprof.out", false, true)
-INITIALIZE_PASS_END(ProfileMetadataLoaderPass, "profile-metadata-loader",
-              "Load profile information from llvmprof.out", false, true)
+static RegisterPass<ProfileMetadataLoaderPass> X("profile-metadata-loader",
+              "Load profile information from llvmprof.out", false, true);
 
 char &llvm::ProfileMetadataLoaderPassID = ProfileMetadataLoaderPass::ID;
 
-/// createProfileMetadataLoaderPass - This function returns a Pass that loads
-/// the profiling information for the module from the specified filename,
-/// making it available to the optimizers.
-ModulePass *llvm::createProfileMetadataLoaderPass() { 
-    return new ProfileMetadataLoaderPass();
-}
-ModulePass *llvm::createProfileMetadataLoaderPass(const std::string &Filename) {
-  return new ProfileMetadataLoaderPass(Filename);
-}
 
 /// readEdge - Take the value from a profile counter and assign it to an edge.
 void ProfileMetadataLoaderPass::readEdge(unsigned ReadCount,

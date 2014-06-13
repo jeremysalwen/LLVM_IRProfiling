@@ -5,7 +5,8 @@ namespace llvm {
 	class ImmutablePass;
 	
 extern char &ProfileEstimatorPassID;
-
-
+extern char &PathProfileLoaderPassID;
+extern char &ProfileMetadataLoaderPassID;
+extern char &ProfileLoaderPassID;
 }
 #endif //BCPROF_ANALYSIS_PASSES_H

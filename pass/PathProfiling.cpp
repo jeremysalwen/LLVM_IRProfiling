@@ -61,6 +61,7 @@
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include <vector>
 
@@ -665,7 +666,7 @@ void BLInstrumentationDag::generateDotGraph() {
   std::string filename = "pathdag." + functionName + ".dot";
 
   DEBUG (dbgs() << "Writing '" << filename << "'...\n");
-  raw_fd_ostream dotFile(filename.c_str(), errorInfo);
+  raw_fd_ostream dotFile(filename.c_str(), errorInfo, sys::fs::F_None);
 
   if (!errorInfo.empty()) {
     errs() << "Error opening '" << filename.c_str() <<"' for writing!";

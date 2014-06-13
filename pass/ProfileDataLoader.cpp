@@ -12,7 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "=ProfileDataLoader.h"
+#include "ProfileDataLoader.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/OwningPtr.h"
 #include "ProfileDataTypes.h"

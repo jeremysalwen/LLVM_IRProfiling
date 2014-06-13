@@ -12,16 +12,16 @@
 //
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "profile-loader"
-#include "llvm/Analysis/Passes.h"
+#include "Passes.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/Statistic.h"
-#include "llvm/Analysis/ProfileInfo.h"
-#include "llvm/Analysis/ProfileInfoLoader.h"
+#include "ProfileInfo.h"
+#include  "ProfileInfoLoader.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
+#include "llvm/IR/CFG.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Format.h"
@@ -80,19 +80,12 @@ namespace {
 }  // End of anonymous namespace
 
 char LoaderPass::ID = 0;
-INITIALIZE_AG_PASS(LoaderPass, ProfileInfo, "profile-loader",
-              "Load profile information from llvmprof.out", false, true, false)
+static RegisterPass<LoaderPass> X("profile-loader",
+              "Load profile information from llvmprof.out", false, true);
+static RegisterAnalysisGroup<ProfileInfo> R(X);
 
 char &llvm::ProfileLoaderPassID = LoaderPass::ID;
 
-ModulePass *llvm::createProfileLoaderPass() { return new LoaderPass(); }
-
-/// createProfileLoaderPass - This function returns a Pass that loads the
-/// profiling information for the module from the specified filename, making it
-/// available to the optimizers.
-Pass *llvm::createProfileLoaderPass(const std::string &Filename) {
-  return new LoaderPass(Filename);
-}
 
 void LoaderPass::readEdgeOrRemember(Edge edge, Edge &tocalc, 
                                     unsigned &uncalc, double &count) {

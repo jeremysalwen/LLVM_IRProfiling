@@ -12,17 +12,17 @@
 //
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "profile-verifier"
-#include "llvm/Analysis/Passes.h"
-#include "llvm/Analysis/ProfileInfo.h"
+#include "Passes.h"
+#include "ProfileInfo.h"
 #include "llvm/IR/Instructions.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Pass.h"
-#include "llvm/Support/CFG.h"
-#include "llvm/Support/CallSite.h"
+#include "llvm/IR/CFG.h"
+#include "llvm/IR/CallSite.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Format.h"
-#include "llvm/Support/InstIterator.h"
+#include "llvm/IR/InstIterator.h"
 #include "llvm/Support/raw_ostream.h"
 #include <set>
 using namespace llvm;
@@ -61,12 +61,10 @@ namespace {
     static char ID; // Class identification, replacement for typeinfo
 
     explicit ProfileVerifierPassT () : FunctionPass(ID) {
-      initializeProfileVerifierPassPass(*PassRegistry::getPassRegistry());
       DisableAssertions = ProfileVerifierDisableAssertions;
     }
     explicit ProfileVerifierPassT (bool da) : FunctionPass(ID), 
                                               DisableAssertions(da) {
-      initializeProfileVerifierPassPass(*PassRegistry::getPassRegistry());
     }
 
     void getAnalysisUsage(AnalysisUsage &AU) const {
@@ -369,15 +367,7 @@ namespace {
   char ProfileVerifierPassT<FType, BType>::ID = 0;
 }
 
-INITIALIZE_PASS_BEGIN(ProfileVerifierPass, "profile-verifier",
-                "Verify profiling information", false, true)
-INITIALIZE_AG_DEPENDENCY(ProfileInfo)
-INITIALIZE_PASS_END(ProfileVerifierPass, "profile-verifier",
-                "Verify profiling information", false, true)
+static RegisterPass<ProfileVerifierPass> X("profile-verifier",
+                "Verify profiling information", false, true);
 
-namespace llvm {
-  FunctionPass *createProfileVerifierPass() {
-    return new ProfileVerifierPass(ProfileVerifierDisableAssertions); 
-  }
-}
 
