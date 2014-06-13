@@ -40,7 +40,6 @@ namespace {
     static char ID; // Class identification, replacement for typeinfo
     explicit ProfileEstimatorPass(const double execcount = 0)
         : FunctionPass(ID), ExecCount(execcount) {
-     // initializeProfileEstimatorPassPass(*PassRegistry::getPassRegistry());
       if (execcount == 0) ExecCount = LoopWeight;
     }
 

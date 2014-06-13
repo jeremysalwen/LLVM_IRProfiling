@@ -345,7 +345,6 @@ private:
 public:
   static char ID; // Pass identification, replacement for typeid
   PathProfiler() : ModulePass(ID) {
-    initializePathProfilerPass(*PassRegistry::getPassRegistry());
   }
 
   virtual const char *getPassName() const {
@@ -360,11 +359,9 @@ static cl::opt<bool> DotPathDag("path-profile-pathdag", cl::Hidden,
 
 // Register the path profiler as a pass
 char PathProfiler::ID = 0;
-INITIALIZE_PASS(PathProfiler, "insert-path-profiling",
+static RegisterPass<PathProfiler> X( "insert-path-profiling",
                 "Insert instrumentation for Ball-Larus path profiling",
-                false, false)
-
-ModulePass *llvm::createPathProfilerPass() { return new PathProfiler(); }
+                false, false);
 
 namespace llvm {
   class PathProfilingFunctionTable {};

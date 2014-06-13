@@ -1077,4 +1077,3 @@ char NoProfileInfo::ID = 0;
 static llvm::RegisterPass<NoProfileInfo> X("no-profile", "No Profile Information", true, true);
 static llvm::RegisterAnalysisGroup<ProfileInfo,true> Y(X);
 
-ImmutablePass *llvm::createNoProfileInfoPass() { return new NoProfileInfo(); }

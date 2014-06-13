@@ -6,6 +6,7 @@ namespace llvm {
 	
 extern char &ProfileEstimatorPassID;
 
+ImmutablePass *createNoProfileInfoPass();
 
 }
 #endif //BCPROF_ANALYSIS_PASSES_H
