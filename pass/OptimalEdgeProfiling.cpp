@@ -64,7 +64,6 @@ inline static void printEdgeCounter(ProfileInfo::Edge e,
 }
 
 bool OptimalEdgeProfiler::runOnModule(Module &M) {
-	printf("test\n");
   Function *Main = M.getFunction("main");
   if (Main == 0) {
     errs() << "WARNING: cannot insert edge profiling into a module"
@@ -127,10 +126,8 @@ bool OptimalEdgeProfiler::runOnModule(Module &M) {
     // edges also participate in the maximum spanning tree calculation.
     // The third parameter of MaximumSpanningTree() has the effect that not the
     // actual MST is returned but the edges _not_ in the MST.
-printf("teeest\n");
     ProfileInfo::EdgeWeights ECs =
       getAnalysis<ProfileInfo>(*F).getEdgeWeights(F);
-	  printf("tot\n");
     std::vector<ProfileInfo::EdgeWeight> EdgeVector(ECs.begin(), ECs.end());
     MaximumSpanningTree<BasicBlock> MST(EdgeVector);
     std::stable_sort(MST.begin(), MST.end());
