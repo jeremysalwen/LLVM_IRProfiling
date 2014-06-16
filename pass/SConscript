@@ -1,5 +1,5 @@
 env=Environment()
 
 env.ParseConfig("llvm-config-3.5 --cppflags --cxxflags")
-env.Append(CPPFLAGS='-Iinclude')
+env.Append(CPPPATH='#include')
 env.SharedLibrary('IRProfiling',Glob('*.cpp')) 
