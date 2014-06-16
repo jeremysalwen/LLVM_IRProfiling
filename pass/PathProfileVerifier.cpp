@@ -171,7 +171,7 @@ bool PathProfileVerifier::runOnModule (Module &M) {
     return false;
   }
 
-  errs() << "Generating edge profile '" << filename << "' ...\n";
+  dbgs() << "Generating edge profile '" << filename << "' ...\n";
 
   // write argument info
   unsigned type = ArgumentInfo;
