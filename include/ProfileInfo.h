@@ -42,12 +42,12 @@ namespace llvm {
   // Helper for dumping edges to dbgs().
   raw_ostream& operator<<(raw_ostream &O, std::pair<const BasicBlock *, const BasicBlock *> E);
   raw_ostream& operator<<(raw_ostream &O, std::pair<const MachineBasicBlock *, const MachineBasicBlock *> E);
-
+/*
   raw_ostream& operator<<(raw_ostream &O, const BasicBlock *BB);
   raw_ostream& operator<<(raw_ostream &O, const MachineBasicBlock *MBB);
 
   raw_ostream& operator<<(raw_ostream &O, const Function *F);
-  raw_ostream& operator<<(raw_ostream &O, const MachineFunction *MF);
+  raw_ostream& operator<<(raw_ostream &O, const MachineFunction *MF);*/
 
   /// ProfileInfo Class - This class holds and maintains profiling
   /// information for some unit of code.
@@ -180,25 +180,31 @@ namespace llvm {
         } else {
           for (typename std::map<const FType*, double>::iterator fi = FunctionInformation.begin(),
                fe = FunctionInformation.end(); fi != fe; ++fi) {
-            dbgs() << fi->first << "@" << format("%p",fi->first) << ": " << format("%.20g",fi->second) << "\n";
+            dbgs() << fi->first->getName() << "@" << format("%p",fi->first) << ": " << format("%.20g",fi->second) << "\n";
             Functions.insert(fi->first);
           }
+			for(auto fi =BlockInformation.begin(), fe=BlockInformation.end(); fi!=fe; ++fi) {
+				 Functions.insert(fi->first);
+			}
+			for(auto fi =EdgeInformation.begin(), fe=EdgeInformation.end(); fi!=fe; ++fi) {
+				 Functions.insert(fi->first);
+			}
         }
 
         for (typename std::set<const FType*>::iterator FI = Functions.begin(), FE = Functions.end();
              FI != FE; ++FI) {
           const FType *F = *FI;
           typename std::map<const FType*, BlockCounts>::iterator bwi = BlockInformation.find(F);
-          dbgs() << "BasicBlocks for Function " << F << ":\n";
+          dbgs() << "BasicBlocks for Function " << F->getName() << ":\n";
           for (typename BlockCounts::const_iterator bi = bwi->second.begin(), be = bwi->second.end(); bi != be; ++bi) {
-            dbgs() << bi->first << "@" << format("%p", bi->first) << ": " << format("%.20g",bi->second) << "\n";
+            dbgs() << bi->first->getName() << "@" << format("%p", bi->first) << ": " << format("%.20g",bi->second) << "\n";
           }
         }
 
         for (typename std::set<const FType*>::iterator FI = Functions.begin(), FE = Functions.end();
              FI != FE; ++FI) {
           typename std::map<const FType*, EdgeWeights>::iterator ei = EdgeInformation.find(*FI);
-          dbgs() << "Edges for Function " << ei->first << ":\n";
+          dbgs() << "Edges for Function " << ei->first->getName() << ":\n";
           for (typename EdgeWeights::iterator ewi = ei->second.begin(), ewe = ei->second.end(); 
                ewi != ewe; ++ewi) {
             dbgs() << ewi->first << ": " << format("%.20g",ewi->second) << "\n";
@@ -207,13 +213,13 @@ namespace llvm {
       } else {
         assert(F && "No function given, this is not supported!");
         dbgs() << "Functions: \n";
-        dbgs() << F << "@" << format("%p", F) << ": " << format("%.20g",getExecutionCount(F)) << "\n";
+        dbgs() << F->getName() << "@" << format("%p", F) << ": " << format("%.20g",getExecutionCount(F)) << "\n";
 
-        dbgs() << "BasicBlocks for Function " << F << ":\n";
+        dbgs() << "BasicBlocks for Function " << F->getName() << ":\n";
         for (typename FType::const_iterator BI = F->begin(), BE = F->end();
              BI != BE; ++BI) {
           const BType *BB = &(*BI);
-          dbgs() << BB << "@" << format("%p", BB) << ": " << format("%.20g",getExecutionCount(BB)) << "\n";
+          dbgs() << BB->getName() << "@" << format("%p", BB) << ": " << format("%.20g",getExecutionCount(BB)) << "\n";
         }
       }
       dbgs() << "**** ProfileInfo " << this << ", over and out.\n";

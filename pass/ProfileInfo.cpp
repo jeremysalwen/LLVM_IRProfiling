@@ -1015,27 +1015,35 @@ void ProfileInfoT<Function,BasicBlock>::repair(const Function *F) {
     }
   }
 }
-
-raw_ostream& operator<<(raw_ostream &O, const MachineFunction *MF) {
-  return O << MF->getFunction()->getName() << "(MF)";
-}
-
-raw_ostream& operator<<(raw_ostream &O, const MachineBasicBlock *MBB) {
-  return O << MBB->getBasicBlock()->getName() << "(MB)";
-}
-
-raw_ostream& operator<<(raw_ostream &O, std::pair<const MachineBasicBlock *, const MachineBasicBlock *> E) {
-  O << "(";
+raw_ostream& operator<<(raw_ostream &O, std::pair<const BasicBlock *,  const BasicBlock *> E) {
+	O << "(";
 
   if (E.first)
-    O << E.first;
+    O << E.first->getName();
   else
     O << "0";
 
   O << ",";
 
   if (E.second)
-    O << E.second;
+    O << E.second->getName();
+  else
+    O << "0";
+
+  return O << ")";
+}
+raw_ostream& operator<<(raw_ostream &O, std::pair<const MachineBasicBlock *, const MachineBasicBlock *> E) {
+  O << "(";
+
+  if (E.first)
+    O << E.first->getName() << "(MB)";
+  else
+    O << "0";
+
+  O << ",";
+
+  if (E.second)
+    O << E.second->getName() << "(MB)";
   else
     O << "0";
 

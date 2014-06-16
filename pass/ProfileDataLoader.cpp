@@ -24,24 +24,7 @@
 #include <cstdlib>
 using namespace llvm;
 
-raw_ostream &llvm::operator<<(raw_ostream &O, std::pair<const BasicBlock *,
-                                                        const BasicBlock *> E) {
-  O << "(";
 
-  if (E.first)
-    O << E.first->getName();
-  else
-    O << "0";
-
-  O << ",";
-
-  if (E.second)
-    O << E.second->getName();
-  else
-    O << "0";
-
-  return O << ")";
-}
 
 /// AddCounts - Add 'A' and 'B', accounting for the fact that the value of one
 /// (or both) may not be defined.
