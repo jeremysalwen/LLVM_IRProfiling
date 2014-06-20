@@ -97,7 +97,7 @@ bool PathProfileVerifier::runOnModule (Module &M) {
     }
   }
 
-  std::vector<unsigned> edgeArray(i);
+  std::vector<uint64_t> edgeArray(i);
 
   // iterate through each path and increment the edge counters as needed
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
@@ -187,12 +187,10 @@ bool PathProfileVerifier::runOnModule (Module &M) {
   type = EdgeInfo;
   num = edgeArray.size();
   fwrite(&type,sizeof(unsigned),1,edgeFile);
-  fwrite(&num,sizeof(unsigned),1,edgeFile);
+  fwrite(&num,sizeof(uint64_t),1,edgeFile);
 
   // write each edge to the file
-  for( std::vector<unsigned>::iterator s = edgeArray.begin(),
-         e = edgeArray.end(); s != e; s++)
-    fwrite(&*s, sizeof (unsigned), 1, edgeFile);
+  fwrite(edgeArray.data(),sizeof(uint64_t),edgeArray.size(),edgeFile);
 
   fclose (edgeFile);
 

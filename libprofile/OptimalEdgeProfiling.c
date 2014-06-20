@@ -16,8 +16,8 @@
 #include "Profiling.h"
 #include <stdlib.h>
 
-static unsigned *ArrayStart;
-static unsigned NumElements;
+static uint64_t *ArrayStart;
+static uint64_t NumElements;
 
 /* OptEdgeProfAtExitHandler - When the program exits, just write out the
  * profiling data.
@@ -36,7 +36,7 @@ static void OptEdgeProfAtExitHandler(void) {
  * profiling library.  It is responsible for setting up the atexit handler.
  */
 int llvm_start_opt_edge_profiling(int argc, const char **argv,
-                                  unsigned *arrayStart, unsigned numElements) {
+                                  uint64_t *arrayStart, uint64_t numElements) {
   int Ret = save_arguments(argc, argv);
   ArrayStart = arrayStart;
   NumElements = numElements;

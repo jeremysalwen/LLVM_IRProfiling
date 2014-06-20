@@ -31,39 +31,40 @@
 #define ARBITRARY_HASH_BIN_COUNT 100
 
 typedef struct pathHashEntry_s {
-  uint32_t pathNumber;
-  uint32_t pathCount;
+  uint64_t pathNumber;
+  uint64_t pathCount;
   struct pathHashEntry_s* next;
 } pathHashEntry_t;
 
 typedef struct pathHashTable_s {
   pathHashEntry_t* hashBins[ARBITRARY_HASH_BIN_COUNT];
-  uint32_t pathCounts;
+  uint64_t pathCounts;
 } pathHashTable_t;
 
 typedef struct {
   enum ProfilingStorageType type;
-  uint32_t size;
+  uint64_t size;
   void* array;
 } ftEntry_t;
 
 /* pointer to the function table allocated in the instrumented program */
 ftEntry_t* ft;
-uint32_t ftSize;
+uint64_t ftSize;
 
 /* write an array table to file */
-void writeArrayTable(uint32_t fNumber, ftEntry_t* ft, uint32_t* funcCount) {
+void writeArrayTable(uint64_t fNumber, ftEntry_t* ft, uint32_t* funcCount) {
   int outFile = getOutFile();
-  uint32_t arrayHeaderLocation = 0;
-  uint32_t arrayCurrentLocation = 0;
-  uint32_t arrayIterator = 0;
-  uint32_t functionUsed = 0;
-  uint32_t pathCounts = 0;
+  uint64_t arrayHeaderLocation = 0;
+  uint64_t arrayCurrentLocation = 0;
+  uint64_t arrayIterator = 0;
+  uint64_t functionUsed = 0;
+  uint64_t pathCounts = 0;
 
   /* look through each entry in the array to determine whether the function
      was executed at all */
   for( arrayIterator = 0; arrayIterator < ft->size; arrayIterator++ ) {
-    uint32_t pc = ((uint32_t*)ft->array)[arrayIterator];
+	  uint64_t* b=(uint64_t*)ft->array;
+    uint64_t pc =b[arrayIterator];
 
     /* was this path executed? */
     if( pc ) {
@@ -107,16 +108,16 @@ void writeArrayTable(uint32_t fNumber, ftEntry_t* ft, uint32_t* funcCount) {
   }
 }
 
-static uint32_t hash (uint32_t key) {
+static uint64_t hash (uint64_t key) {
   /* this may benefit from a proper hash function */
   return key%ARBITRARY_HASH_BIN_COUNT;
 }
 
 /* output a specific function's hash table to the profile file */
-void writeHashTable(uint32_t functionNumber, pathHashTable_t* hashTable) {
+void writeHashTable(uint64_t functionNumber, pathHashTable_t* hashTable) {
   int outFile = getOutFile();
   PathProfileHeader header;
-  uint32_t i;
+  uint64_t i;
 
   header.fnNumber = functionNumber;
   header.numEntries = hashTable->pathCounts;
@@ -150,11 +151,11 @@ void writeHashTable(uint32_t functionNumber, pathHashTable_t* hashTable) {
 }
 
 /* Return a pointer to this path's specific path counter */
-static uint32_t* getPathCounter(uint32_t functionNumber,
-                                       uint32_t pathNumber) {
+static uint64_t* getPathCounter(uint64_t functionNumber,
+                                       uint64_t pathNumber) {
   pathHashTable_t* hashTable;
   pathHashEntry_t* hashEntry;
-  uint32_t index = hash(pathNumber);
+  uint64_t index = hash(pathNumber);
 
   if( ft[functionNumber-1].array == 0)
     ft[functionNumber-1].array = calloc(sizeof(pathHashTable_t), 1);
@@ -180,15 +181,15 @@ static uint32_t* getPathCounter(uint32_t functionNumber,
 }
 
 /* Increment a specific path's count */
-void llvm_increment_path_count (uint32_t functionNumber, uint32_t pathNumber) {
-  uint32_t* pathCounter = getPathCounter(functionNumber, pathNumber);
+void llvm_increment_path_count (uint64_t functionNumber, uint64_t pathNumber) {
+  uint64_t* pathCounter = getPathCounter(functionNumber, pathNumber);
   if( *pathCounter < 0xffffffff )
     (*pathCounter)++;
 }
 
-/* Increment a specific path's count */
-void llvm_decrement_path_count (uint32_t functionNumber, uint32_t pathNumber) {
-  uint32_t* pathCounter = getPathCounter(functionNumber, pathNumber);
+/* Decrement a specific path's count */
+void llvm_decrement_path_count (uint64_t functionNumber, uint64_t pathNumber) {
+  uint64_t* pathCounter = getPathCounter(functionNumber, pathNumber);
   (*pathCounter)--;
 }
 
@@ -196,15 +197,15 @@ void llvm_decrement_path_count (uint32_t functionNumber, uint32_t pathNumber) {
  * Writes out a path profile given a function table, in the following format.
  *
  *
- *      | <-- 32 bits --> |
+ *      | <-- 64 bits --> |
  *      +-----------------+-----------------+
  * 0x00 | profileType     | functionCount   |
  *      +-----------------+-----------------+
- * 0x08 | functionNum     | profileEntries  |  // function 1
+ * 0x10 | functionNum     | profileEntries  |  // function 1
  *      +-----------------+-----------------+
- * 0x10 | pathNumber      | pathCounter     |  // entry 1.1
+ * 0x20 | pathNumber      | pathCounter     |  // entry 1.1
  *      +-----------------+-----------------+
- * 0x18 | pathNumber      | pathCounter     |  // entry 1.2
+ * 0x30 | pathNumber      | pathCounter     |  // entry 1.2
  *      +-----------------+-----------------+
  *  ... |       ...       |       ...       |  // entry 1.n
  *      +-----------------+-----------------+
@@ -232,7 +233,7 @@ static void pathProfAtExitHandler(void) {
   /* Iterate through each function */
   for( i = 0; i < ftSize; i++ ) {
     if( ft[i].type == ProfilingArray ) {
-      writeArrayTable(i+1,&ft[i],header + 1);
+      writeArrayTable(i+1,&ft[i],&header[1]);
 
     } else if( ft[i].type == ProfilingHash ) {
       /* If the hash exists, write it to file */
@@ -260,7 +261,7 @@ static void pathProfAtExitHandler(void) {
  * profiling library.  It is responsible for setting up the atexit handler.
  */
 int llvm_start_path_profiling(int argc, const char** argv,
-                              void* functionTable, uint32_t numElements) {
+                              void* functionTable, uint64_t numElements) {
   int Ret = save_arguments(argc, argv);
   ft = functionTable;
   ftSize = numElements;

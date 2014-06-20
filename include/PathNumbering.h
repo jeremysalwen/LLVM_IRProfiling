@@ -65,8 +65,8 @@ public:
   BasicBlock* getBlock();
 
   // Get/set the number of paths to the exit starting at the node.
-  unsigned getNumberPaths();
-  void setNumberPaths(unsigned numberPaths);
+  uint64_t getNumberPaths();
+  void setNumberPaths(uint64_t numberPaths);
 
   // Get/set the NodeColor used in graph algorithms.
   NodeColor getColor();
@@ -112,7 +112,7 @@ private:
   BLEdgeVector _succEdges;
 
   // The number of paths from the node to the exit.
-  unsigned _numberPaths;
+  uint64_t _numberPaths;
 
   // 'Color' used by graph algorithms to mark the node.
   NodeColor _color;
@@ -150,10 +150,10 @@ public:
 
   // Returns the weight of this edge.  Used to decode path numbers to
   // sequences of basic blocks.
-  unsigned getWeight();
+  uint64_t getWeight();
 
   // Sets the weight of the edge.  Used during path numbering.
-  void setWeight(unsigned weight);
+  void setWeight(uint64_t weight);
 
   // Gets/sets the phony edge originating at the root.
   BallLarusEdge* getPhonyRoot();
@@ -181,7 +181,7 @@ private:
   // Edge weight cooresponding to path number increments before removing
   // increments along a spanning tree. The sum over the edge weights gives
   // the path number.
-  unsigned _weight;
+  uint64_t _weight;
 
   // Type to represent for what this edge is intended
   EdgeType _edgeType;
@@ -227,7 +227,7 @@ public:
   void calculatePathNumbers();
 
   // Returns the number of paths for the DAG.
-  unsigned getNumberOfPaths();
+  uint64_t getNumberOfPaths();
 
   // Returns the root (i.e. entry) node for the DAG.
   BallLarusNode* getRoot();

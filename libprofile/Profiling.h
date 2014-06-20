@@ -14,8 +14,9 @@
 
 #ifndef PROFILING_H
 #define PROFILING_H
-
+#include <stdint.h>
 #include "ProfileDataTypes.h" /* for enum ProfilingType */
+
 
 /* save_arguments - Save argc and argv as passed into the program for the file
  * we output.
@@ -30,7 +31,7 @@ int getOutFile();
 /* write_profiling_data - Write out a typed packet of profiling data to the
  * current output file.
  */
-void write_profiling_data(enum ProfilingType PT, unsigned *Start,
-                          unsigned NumElements);
+void write_profiling_data(enum ProfilingType PT, uint64_t *Start,
+                          uint64_t NumElements);
 
 #endif

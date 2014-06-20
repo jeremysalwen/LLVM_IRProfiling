@@ -374,7 +374,7 @@ namespace llvm {
     static StructType *get(LLVMContext& C) {
       return( StructType::get(
                 TypeBuilder<types::i<32>, xcompile>::get(C), // type
-                TypeBuilder<types::i<32>, xcompile>::get(C), // array size
+                TypeBuilder<types::i<64>, xcompile>::get(C), // array size
                 TypeBuilder<types::i<8>*, xcompile>::get(C), // array/hash ptr
                 NULL));
     }
@@ -891,14 +891,14 @@ int BLInstrumentationDag::calculateChordIncrementsDir(BallLarusEdge* e,
 // Creates an increment constant representing incr.
 ConstantInt* PathProfiler::createIncrementConstant(long incr,
                                                    int bitsize) {
-  return(ConstantInt::get(IntegerType::get(*Context, 32), incr));
+  return(ConstantInt::get(IntegerType::get(*Context, bitsize), incr));
 }
 
 // Creates an increment constant representing the value in
 // edge->getIncrement().
 ConstantInt* PathProfiler::createIncrementConstant(
   BLInstrumentationEdge* edge) {
-  return(createIncrementConstant(edge->getIncrement(), 32));
+  return(createIncrementConstant(edge->getIncrement(), 64));
 }
 
 // Finds the insertion point after pathNumber in block.  PathNumber may
@@ -931,7 +931,7 @@ void PathProfiler::preparePHI(BLInstrumentationNode* node) {
   BasicBlock::iterator insertPoint = block->getFirstInsertionPt();
   pred_iterator PB = pred_begin(node->getBlock()),
           PE = pred_end(node->getBlock());
-  PHINode* phi = PHINode::Create(Type::getInt32Ty(*Context),
+  PHINode* phi = PHINode::Create(Type::getInt64Ty(*Context),
                                  std::distance(PB, PE), "pathNumber",
                                  insertPoint );
   node->setPathPHI(phi);
@@ -942,7 +942,7 @@ void PathProfiler::preparePHI(BLInstrumentationNode* node) {
     BasicBlock* pred = (*predIt);
 
     if(pred != NULL)
-      phi->addIncoming(createIncrementConstant((long)-1, 32), pred);
+      phi->addIncoming(createIncrementConstant((long)-1, 64), pred);
   }
 }
 
@@ -1023,7 +1023,7 @@ void PathProfiler::insertCounterIncrement(Value* incValue,
   if( dag->getNumberOfPaths() <= HASH_THRESHHOLD ) {
     // Get pointer to the array location
     std::vector<Value*> gepIndices(2);
-    gepIndices[0] = Constant::getNullValue(Type::getInt32Ty(*Context));
+    gepIndices[0] = Constant::getNullValue(Type::getInt64Ty(*Context));
     gepIndices[1] = incValue;
 
     GetElementPtrInst* pcPointer =
@@ -1035,13 +1035,13 @@ void PathProfiler::insertCounterIncrement(Value* incValue,
 
     // Test to see whether adding 1 will overflow the counter
     ICmpInst* isMax = new ICmpInst(insertPoint, CmpInst::ICMP_ULT, oldPc,
-                                   createIncrementConstant(0xffffffff, 32),
+                                   createIncrementConstant(0xffffffff, 64),
                                    "isMax");
 
     // Select increment for the path counter based on overflow
     SelectInst* inc =
-      SelectInst::Create( isMax, createIncrementConstant(increment?1:-1,32),
-                          createIncrementConstant(0,32),
+      SelectInst::Create( isMax, createIncrementConstant(increment?1:-1,64),
+                          createIncrementConstant(0,64),
                           "pathInc", insertPoint);
 
     // newPc = oldPc + inc
@@ -1053,7 +1053,7 @@ void PathProfiler::insertCounterIncrement(Value* incValue,
     new StoreInst(newPc, pcPointer, insertPoint);
   } else { // Counter increment for hash
     std::vector<Value*> args(2);
-    args[0] = ConstantInt::get(Type::getInt32Ty(*Context),
+    args[0] = ConstantInt::get(Type::getInt64Ty(*Context),
                                currentFunctionNumber);
     args[1] = incValue;
 
@@ -1132,8 +1132,8 @@ void PathProfiler::insertInstrumentationStartingAt(BLInstrumentationEdge* edge,
 
     // split edge has yet to be initialized
     if( !instrumentNode->getEndingPathNumber() ) {
-      instrumentNode->setStartingPathNumber(createIncrementConstant(0,32));
-      instrumentNode->setEndingPathNumber(createIncrementConstant(0,32));
+      instrumentNode->setStartingPathNumber(createIncrementConstant(0,64));
+      instrumentNode->setEndingPathNumber(createIncrementConstant(0,64));
     }
 
     BasicBlock::iterator insertPoint = atBeginning ?
@@ -1247,13 +1247,13 @@ void PathProfiler::insertInstrumentation(
       if ( inc )
         newpn = BinaryOperator::Create(Instruction::Add,
                                        node->getStartingPathNumber(),
-                                       createIncrementConstant(inc,32),
+                                       createIncrementConstant(inc,64),
                                        "pathNumber", insertPoint);
       else
         newpn = node->getStartingPathNumber();
     } else {
       newpn = (Value*)createIncrementConstant(
-        ((BLInstrumentationEdge*)(*edge))->getIncrement(), 32);
+        ((BLInstrumentationEdge*)(*edge))->getIncrement(), 64);
     }
 
     insertCounterIncrement(newpn, insertPoint, &dag);
@@ -1286,7 +1286,7 @@ void PathProfiler::runOnFunction(std::vector<Constant*> &ftInit,
 
   // Should we store the information in an array or hash
   if( dag.getNumberOfPaths() <= HASH_THRESHHOLD ) {
-    Type* t = ArrayType::get(Type::getInt32Ty(*Context),
+    Type* t = ArrayType::get(Type::getInt64Ty(*Context),
                                    dag.getNumberOfPaths());
 
     dag.setCounterArray(new GlobalVariable(M, t, false,
@@ -1307,7 +1307,7 @@ void PathProfiler::runOnFunction(std::vector<Constant*> &ftInit,
 
   std::vector<Constant*> entryArray(3);
   entryArray[0] = createIncrementConstant(type,32);
-  entryArray[1] = createIncrementConstant(dag.getNumberOfPaths(),32);
+  entryArray[1] = createIncrementConstant(dag.getNumberOfPaths(),64);
   entryArray[2] = dag.getCounterArray() ?
     ConstantExpr::getBitCast(dag.getCounterArray(), voidPtr) :
     Constant::getNullValue(voidPtr);
@@ -1351,15 +1351,15 @@ bool PathProfiler::runOnModule(Module &M) {
   llvmIncrementHashFunction = M.getOrInsertFunction(
     "llvm_increment_path_count",
     Type::getVoidTy(*Context), // return type
-    Type::getInt32Ty(*Context), // function number
-    Type::getInt32Ty(*Context), // path number
+    Type::getInt64Ty(*Context), // function number
+    Type::getInt64Ty(*Context), // path number
     NULL );
 
   llvmDecrementHashFunction = M.getOrInsertFunction(
     "llvm_decrement_path_count",
     Type::getVoidTy(*Context), // return type
-    Type::getInt32Ty(*Context), // function number
-    Type::getInt32Ty(*Context), // path number
+    Type::getInt64Ty(*Context), // function number
+    Type::getInt64Ty(*Context), // path number
     NULL );
 
   std::vector<Constant*> ftInit;

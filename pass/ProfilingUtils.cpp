@@ -28,12 +28,12 @@ void llvm::InsertProfilingInitCall(Function *MainFn, const char *FnName,
   Type *ArgVTy =
     PointerType::getUnqual(Type::getInt8PtrTy(Context));
   PointerType *UIntPtr = arrayType ? arrayType :
-    Type::getInt32PtrTy(Context);
+    Type::getInt64PtrTy(Context);
   Module &M = *MainFn->getParent();
   Constant *InitFn = M.getOrInsertFunction(FnName, Type::getInt32Ty(Context),
                                            Type::getInt32Ty(Context),
                                            ArgVTy, UIntPtr,
-                                           Type::getInt32Ty(Context),
+                                           Type::getInt64Ty(Context),
                                            (Type *)0);
 
   // This could force argc and argv into programs that wouldn't otherwise have
@@ -48,7 +48,7 @@ void llvm::InsertProfilingInitCall(Function *MainFn, const char *FnName,
   while (isa<AllocaInst>(InsertPos)) ++InsertPos;
 
   std::vector<Constant*> GEPIndices(2,
-                             Constant::getNullValue(Type::getInt32Ty(Context)));
+                             Constant::getNullValue(Type::getInt64Ty(Context)));
   unsigned NumElements = 0;
   if (Array) {
     Args[2] = ConstantExpr::getGetElementPtr(Array, GEPIndices);
@@ -59,7 +59,7 @@ void llvm::InsertProfilingInitCall(Function *MainFn, const char *FnName,
     // pass null.
     Args[2] = ConstantPointerNull::get(UIntPtr);
   }
-  Args[3] = ConstantInt::get(Type::getInt32Ty(Context), NumElements);
+  Args[3] = ConstantInt::get(Type::getInt64Ty(Context), NumElements);
 
   CallInst *InitCall = CallInst::Create(InitFn, Args, "newargc", InsertPos);
 
@@ -104,7 +104,7 @@ void llvm::InsertProfilingInitCall(Function *MainFn, const char *FnName,
   }
 }
 
-void llvm::IncrementCounterInBlock(BasicBlock *BB, unsigned CounterNum,
+void llvm::IncrementCounterInBlock(BasicBlock *BB, uint64_t CounterNum,
                                    GlobalValue *CounterArray, bool beginning) {
   // Insert the increment after any alloca or PHI instructions...
   BasicBlock::iterator InsertPos = beginning ? BB->getFirstInsertionPt() :
@@ -116,15 +116,15 @@ void llvm::IncrementCounterInBlock(BasicBlock *BB, unsigned CounterNum,
 
   // Create the getelementptr constant expression
   std::vector<Constant*> Indices(2);
-  Indices[0] = Constant::getNullValue(Type::getInt32Ty(Context));
-  Indices[1] = ConstantInt::get(Type::getInt32Ty(Context), CounterNum);
+  Indices[0] = Constant::getNullValue(Type::getInt64Ty(Context));
+  Indices[1] = ConstantInt::get(Type::getInt64Ty(Context), CounterNum);
   Constant *ElementPtr =
     ConstantExpr::getGetElementPtr(CounterArray, Indices);
 
   // Load, increment and store the value back.
   Value *OldVal = new LoadInst(ElementPtr, "OldFuncCounter", InsertPos);
   Value *NewVal = BinaryOperator::Create(Instruction::Add, OldVal,
-                                 ConstantInt::get(Type::getInt32Ty(Context), 1),
+                                 ConstantInt::get(Type::getInt64Ty(Context), 1),
                                          "NewFuncCounter", InsertPos);
   new StoreInst(NewVal, ElementPtr, InsertPos);
 }

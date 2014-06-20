@@ -61,7 +61,7 @@ namespace {
     // blocks as possbile.
     virtual void recurseBasicBlock(const BasicBlock *BB);
     virtual void readEdgeOrRemember(Edge, Edge&, unsigned &, double &);
-    virtual void readEdge(ProfileInfo::Edge, std::vector<unsigned>&);
+    virtual void readEdge(ProfileInfo::Edge, std::vector<uint64_t>&);
 
     /// getAdjustedAnalysisPointer - This method is used when a pass implements
     /// an analysis interface through multiple inheritance.  If needed, it
@@ -122,19 +122,18 @@ void LoaderPass::recurseBasicBlock(const BasicBlock *BB) {
 }
 
 void LoaderPass::readEdge(ProfileInfo::Edge e,
-                          std::vector<unsigned> &ECs) {
+                          std::vector<uint64_t> &ECs) {
   if (ReadCount < ECs.size()) {
     double weight = ECs[ReadCount++];
     if (weight != ProfileInfoLoader::Uncounted) {
-      // Here the data realm changes from the unsigned of the file to the
-      // double of the ProfileInfo. This conversion is save because we know
-      // that everything thats representable in unsinged is also representable
-      // in double.
+      // Here the data realm changes from the uint64_t of the file to the
+      // double of the ProfileInfo. This conversion would only be safe for
+	  // values up to 2^52
       EdgeInformation[getFunction(e)][e] += (double)weight;
 
       DEBUG(dbgs() << "--Read Edge Counter for " << e
                    << " (# "<< (ReadCount-1) << "): "
-                   << (unsigned)getEdgeWeight(e) << "\n");
+                   << (uint64_t)getEdgeWeight(e) << "\n");
     } else {
       // This happens only if reading optimal profiling information, not when
       // reading regular profiling information.
@@ -147,7 +146,7 @@ bool LoaderPass::runOnModule(Module &M) {
   ProfileInfoLoader PIL("profile-loader", Filename);
 
   EdgeInformation.clear();
-  std::vector<unsigned> Counters = PIL.getRawEdgeCounts();
+  std::vector<uint64_t> Counters = PIL.getRawEdgeCounts();
   if (Counters.size() > 0) {
     ReadCount = 0;
     for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
@@ -224,10 +223,9 @@ bool LoaderPass::runOnModule(Module &M) {
       if (F->isDeclaration()) continue;
       for (Function::iterator BB = F->begin(), E = F->end(); BB != E; ++BB)
         if (ReadCount < Counters.size())
-          // Here the data realm changes from the unsigned of the file to the
-          // double of the ProfileInfo. This conversion is save because we know
-          // that everything thats representable in unsinged is also
-          // representable in double.
+          // Here the data realm changes from the uint64_t of the file to the
+          // double of the ProfileInfo. This conversion would only be safe for
+	      // values up to 2^52
           BlockInformation[F][BB] = (double)Counters[ReadCount++];
     }
     if (ReadCount != Counters.size()) {
@@ -243,10 +241,9 @@ bool LoaderPass::runOnModule(Module &M) {
     for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
       if (F->isDeclaration()) continue;
       if (ReadCount < Counters.size())
-        // Here the data realm changes from the unsigned of the file to the
-        // double of the ProfileInfo. This conversion is save because we know
-        // that everything thats representable in unsinged is also
-        // representable in double.
+        // Here the data realm changes from the uint64_t of the file to the
+        // double of the ProfileInfo. This conversion would only be safe for
+		// values up to 2^52
         FunctionInformation[F] = (double)Counters[ReadCount++];
     }
     if (ReadCount != Counters.size()) {

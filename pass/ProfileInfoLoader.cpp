@@ -31,7 +31,7 @@ static inline unsigned ByteSwap(unsigned Var, bool Really) {
          ((Var & (255U<<24U)) >> 24U);
 }
 
-static unsigned AddCounts(unsigned A, unsigned B) {
+static uint64_t AddCounts(uint64_t A, uint64_t B) {
   // If either value is undefined, use the other.
   if (A == ProfileInfoLoader::Uncounted) return B;
   if (B == ProfileInfoLoader::Uncounted) return A;
@@ -40,22 +40,22 @@ static unsigned AddCounts(unsigned A, unsigned B) {
 
 static void ReadProfilingBlock(const char *ToolName, FILE *F,
                                bool ShouldByteSwap,
-                               std::vector<unsigned> &Data) {
+                               std::vector<uint64_t> &Data) {
   // Read the number of entries...
   unsigned NumEntries;
-  if (fread(&NumEntries, sizeof(unsigned), 1, F) != 1) {
-    errs() << ToolName << ": data packet truncated!\n";
+  if (fread(&NumEntries, sizeof(uint64_t), 1, F) != 1) {
+    errs() << ToolName << ": data packet truncated at num entries!\n";
     perror(0);
     exit(1);
   }
   NumEntries = ByteSwap(NumEntries, ShouldByteSwap);
 
   // Read the counts...
-  std::vector<unsigned> TempSpace(NumEntries);
+  std::vector<uint64_t> TempSpace(NumEntries);
 
   // Read in the block of data...
-  if (fread(&TempSpace[0], sizeof(unsigned)*NumEntries, 1, F) != 1) {
-    errs() << ToolName << ": data packet truncated!\n";
+  if (fread(&TempSpace[0], sizeof(uint64_t)*NumEntries ,1, F) != 1) {
+    errs() << ToolName << ": data packet truncated at profiling block!\n";
     perror(0);
     exit(1);
   }
@@ -67,17 +67,17 @@ static void ReadProfilingBlock(const char *ToolName, FILE *F,
 
   // Accumulate the data we just read into the data.
   if (!ShouldByteSwap) {
-    for (unsigned i = 0; i != NumEntries; ++i) {
+    for (uint64_t i = 0; i != NumEntries; ++i) {
       Data[i] = AddCounts(TempSpace[i], Data[i]);
     }
   } else {
-    for (unsigned i = 0; i != NumEntries; ++i) {
+    for (uint64_t i = 0; i != NumEntries; ++i) {
       Data[i] = AddCounts(ByteSwap(TempSpace[i], true), Data[i]);
     }
   }
 }
 
-const unsigned ProfileInfoLoader::Uncounted = ~0U;
+const uint64_t ProfileInfoLoader::Uncounted = ~0U;
 
 // ProfileInfoLoader ctor - Read the specified profiling data file, exiting the
 // program if the file is invalid or broken.

@@ -102,7 +102,7 @@ ProfilePathEdge::ProfilePathEdge (BasicBlock* source, BasicBlock* target,
 // Path implementation
 //
 
-ProfilePath::ProfilePath (unsigned int number, unsigned int count,
+ProfilePath::ProfilePath (uint64_t number, uint64_t count,
                           double countStdDev,   PathProfileInfo* ppi)
   : _number(number) , _count(count), _countStdDev(countStdDev), _ppi(ppi) {}
 
@@ -112,7 +112,7 @@ double ProfilePath::getFrequency() const {
 }
 
 static BallLarusEdge* getNextEdge (BallLarusNode* node,
-                                   unsigned int pathNumber) {
+                                   uint64_t pathNumber) {
   BallLarusEdge* best = 0;
 
   for( BLEdgeIterator next = node->succBegin(),
@@ -129,7 +129,7 @@ static BallLarusEdge* getNextEdge (BallLarusNode* node,
 
 ProfilePathEdgeVector* ProfilePath::getPathEdges() const {
   BallLarusNode* currentNode = _ppi->_currentDag->getRoot ();
-  unsigned int increment = _number;
+  uint64_t increment = _number;
   ProfilePathEdgeVector* pev = new ProfilePathEdgeVector;
 
   while (currentNode != _ppi->_currentDag->getExit()) {
@@ -168,7 +168,7 @@ ProfilePathEdgeVector* ProfilePath::getPathEdges() const {
 
 ProfilePathBlockVector* ProfilePath::getPathBlocks() const {
   BallLarusNode* currentNode = _ppi->_currentDag->getRoot ();
-  unsigned int increment = _number;
+  uint64_t increment = _number;
   ProfilePathBlockVector* pbv = new ProfilePathBlockVector;
 
   while (currentNode != _ppi->_currentDag->getExit()) {
@@ -242,12 +242,12 @@ BasicBlock* PathProfileInfo::getCurrentFunctionEntry() {
 }
 
 // return the path based on its number
-ProfilePath* PathProfileInfo::getPath(unsigned int number) {
+ProfilePath* PathProfileInfo::getPath(uint64_t number) {
   return _functionPaths[_currentFunction][number];
 }
 
 // return the number of paths which a function may potentially execute
-unsigned int PathProfileInfo::getPotentialPathCount() {
+uint64_t PathProfileInfo::getPotentialPathCount() {
   return _currentDag ? _currentDag->getNumberOfPaths() : 0;
 }
 
@@ -262,7 +262,7 @@ ProfilePathIterator PathProfileInfo::pathEnd() {
 }
 
 // returns the total number of paths run in the function
-unsigned int PathProfileInfo::pathsRun() {
+uint64_t PathProfileInfo::pathsRun() {
   return _currentFunction ? _functionPaths[_currentFunction].size() : 0;
 }
 
@@ -377,8 +377,8 @@ void PathProfileLoaderPass::handlePathInfo () {
     }
 
     // Build a new path for the current function
-    unsigned int totalPaths = 0;
-    for (unsigned int j = 0; j < pathHeader.numEntries; j++) {
+    uint64_t totalPaths = 0;
+    for (uint64_t j = 0; j < pathHeader.numEntries; j++) {
       totalPaths += pathTable[j].pathCounter;
       _functionPaths[f][pathTable[j].pathNumber]
         = new ProfilePath(pathTable[j].pathNumber, pathTable[j].pathCounter,

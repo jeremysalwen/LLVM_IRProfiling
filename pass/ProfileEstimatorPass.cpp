@@ -85,7 +85,7 @@ namespace llvm {
 
   /// createProfileEstimatorPass - This function returns a Pass that estimates
   /// profiling information using the given loop execution count.
-  Pass *createProfileEstimatorPass(const unsigned execcount) {
+  Pass *createProfileEstimatorPass(const uint64_t execcount) {
     return new ProfileEstimatorPass(execcount);
   }
 static double ignoreMissing(double w) {

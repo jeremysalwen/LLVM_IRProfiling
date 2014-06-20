@@ -28,7 +28,7 @@ using namespace llvm;
 
 /// AddCounts - Add 'A' and 'B', accounting for the fact that the value of one
 /// (or both) may not be defined.
-static unsigned AddCounts(unsigned A, unsigned B) {
+static uint64_t AddCounts(uint64_t A, uint64_t B) {
   // If either value is undefined, use the other.
   // Undefined + undefined = undefined.
   if (A == ProfileDataLoader::Uncounted) return B;
@@ -50,8 +50,8 @@ static void ReadProfilingData(const char *ToolName, FILE *F,
 /// packet.
 static unsigned ReadProfilingNumEntries(const char *ToolName, FILE *F,
                                         bool ShouldByteSwap) {
-  unsigned Entry;
-  ReadProfilingData<unsigned>(ToolName, F, &Entry, 1);
+  uint32_t Entry;
+  ReadProfilingData<uint32_t>(ToolName, F, &Entry, 1);
   return ShouldByteSwap ? ByteSwap_32(Entry) : Entry;
 }
 
@@ -59,13 +59,13 @@ static unsigned ReadProfilingNumEntries(const char *ToolName, FILE *F,
 /// packet and then accumulate the entries into 'Data'.
 static void ReadProfilingBlock(const char *ToolName, FILE *F,
                                bool ShouldByteSwap,
-                               SmallVectorImpl<unsigned> &Data) {
+                               SmallVectorImpl<uint64_t> &Data) {
   // Read the number of entries...
   unsigned NumEntries = ReadProfilingNumEntries(ToolName, F, ShouldByteSwap);
 
   // Read in the data.
-  SmallVector<unsigned, 8> TempSpace(NumEntries);
-  ReadProfilingData<unsigned>(ToolName, F, TempSpace.data(), NumEntries);
+  SmallVector<uint64_t, 8> TempSpace(NumEntries);
+  ReadProfilingData<uint64_t>(ToolName, F, TempSpace.data(), NumEntries);
 
   // Make sure we have enough space ...
   if (Data.size() < NumEntries)
@@ -73,7 +73,7 @@ static void ReadProfilingBlock(const char *ToolName, FILE *F,
 
   // Accumulate the data we just read into the existing data.
   for (unsigned i = 0; i < NumEntries; ++i) {
-    unsigned Entry = ShouldByteSwap ? ByteSwap_32(TempSpace[i]) : TempSpace[i];
+    uint64_t Entry = ShouldByteSwap ? ByteSwap_64(TempSpace[i]) : TempSpace[i];
     Data[i] = AddCounts(Entry, Data[i]);
   }
 }
@@ -96,7 +96,7 @@ static void ReadProfilingArgBlock(const char *ToolName, FILE *F,
   CommandLines.push_back(std::string(&Args[0], &Args[ArgLength]));
 }
 
-const unsigned ProfileDataLoader::Uncounted = ~0U;
+const uint64_t ProfileDataLoader::Uncounted = ~0U;
 
 /// ProfileDataLoader ctor - Read the specified profiling data file, reporting
 /// a fatal error if the file is invalid or broken.
@@ -116,7 +116,7 @@ ProfileDataLoader::ProfileDataLoader(const char *ToolName,
     // information.  This can happen when the compiler host and target have
     // different endianness.
     bool ShouldByteSwap = (char)PacketType == 0;
-    PacketType = ShouldByteSwap ? ByteSwap_32(PacketType) : PacketType;
+    PacketType = ShouldByteSwap ? ByteSwap_64(PacketType) : PacketType;
 
     switch (PacketType) {
       case ArgumentInfo:

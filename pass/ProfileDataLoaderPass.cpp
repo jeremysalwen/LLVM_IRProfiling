@@ -62,8 +62,8 @@ namespace {
     }
 
     virtual void readEdge(unsigned, ProfileData&, ProfileData::Edge,
-                          ArrayRef<unsigned>);
-    virtual unsigned matchEdges(Module&, ProfileData&, ArrayRef<unsigned>);
+                          ArrayRef<uint64_t>);
+    virtual unsigned matchEdges(Module&, ProfileData&, ArrayRef<uint64_t>);
     virtual void setBranchWeightMetadata(Module&, ProfileData&);
 
     virtual bool runOnModule(Module &M);
@@ -80,10 +80,10 @@ char &llvm::ProfileMetadataLoaderPassID = ProfileMetadataLoaderPass::ID;
 /// readEdge - Take the value from a profile counter and assign it to an edge.
 void ProfileMetadataLoaderPass::readEdge(unsigned ReadCount,
                                          ProfileData &PB, ProfileData::Edge e,
-                                         ArrayRef<unsigned> Counters) {
+                                         ArrayRef<uint64_t> Counters) {
   if (ReadCount >= Counters.size()) return;
 
-  unsigned weight = Counters[ReadCount];
+ uint64_t weight = Counters[ReadCount];
   assert(weight != ProfileDataLoader::Uncounted);
   PB.addEdgeWeight(e, weight);
 
@@ -94,7 +94,7 @@ void ProfileMetadataLoaderPass::readEdge(unsigned ReadCount,
 
 /// matchEdges - Link every profile counter with an edge.
 unsigned ProfileMetadataLoaderPass::matchEdges(Module &M, ProfileData &PB,
-                                               ArrayRef<unsigned> Counters) {
+                                               ArrayRef<uint64_t> Counters) {
   if (Counters.size() == 0) return 0;
 
   unsigned ReadCount = 0;
@@ -160,7 +160,7 @@ bool ProfileMetadataLoaderPass::runOnModule(Module &M) {
   ProfileDataLoader PDL("profile-data-loader", Filename);
   ProfileData PB;
 
-  ArrayRef<unsigned> Counters = PDL.getRawEdgeCounts();
+  ArrayRef<uint64_t> Counters = PDL.getRawEdgeCounts();
 
   unsigned ReadCount = matchEdges(M, PB, Counters);
 

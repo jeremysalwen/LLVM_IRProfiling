@@ -29,17 +29,17 @@ class BasicBlock;
 class ProfileInfoLoader {
   const std::string &Filename;
   std::vector<std::string> CommandLines;
-  std::vector<unsigned>    FunctionCounts;
-  std::vector<unsigned>    BlockCounts;
-  std::vector<unsigned>    EdgeCounts;
-  std::vector<unsigned>    OptimalEdgeCounts;
-  std::vector<unsigned>    BBTrace;
+  std::vector<uint64_t>    FunctionCounts;
+  std::vector<uint64_t>    BlockCounts;
+  std::vector<uint64_t>    EdgeCounts;
+  std::vector<uint64_t>    OptimalEdgeCounts;
+  std::vector<uint64_t>    BBTrace;
 public:
   // ProfileInfoLoader ctor - Read the specified profiling data file, exiting
   // the program if the file is invalid or broken.
   ProfileInfoLoader(const char *ToolName, const std::string &Filename);
 
-  static const unsigned Uncounted;
+  static const uint64_t Uncounted;
 
   unsigned getNumExecutions() const { return CommandLines.size(); }
   const std::string &getExecution(unsigned i) const { return CommandLines[i]; }
@@ -49,28 +49,28 @@ public:
   // getRawFunctionCounts - This method is used by consumers of function
   // counting information.
   //
-  const std::vector<unsigned> &getRawFunctionCounts() const {
+  const std::vector<uint64_t> &getRawFunctionCounts() const {
     return FunctionCounts;
   }
 
   // getRawBlockCounts - This method is used by consumers of block counting
   // information.
   //
-  const std::vector<unsigned> &getRawBlockCounts() const {
+  const std::vector<uint64_t> &getRawBlockCounts() const {
     return BlockCounts;
   }
 
   // getEdgeCounts - This method is used by consumers of edge counting
   // information.
   //
-  const std::vector<unsigned> &getRawEdgeCounts() const {
+  const std::vector<uint64_t> &getRawEdgeCounts() const {
     return EdgeCounts;
   }
 
   // getEdgeOptimalCounts - This method is used by consumers of optimal edge 
   // counting information.
   //
-  const std::vector<unsigned> &getRawOptimalEdgeCounts() const {
+  const std::vector<uint64_t> &getRawOptimalEdgeCounts() const {
     return OptimalEdgeCounts;
   }
 

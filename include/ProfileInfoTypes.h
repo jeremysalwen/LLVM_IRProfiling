@@ -27,22 +27,23 @@ enum ProfilingStorageType {
   ProfilingHash = 2
 };
 
+#include <stdint.h>
 #include "ProfileDataTypes.h"
 
 /*
  * The header for tables that map path numbers to path counters.
  */
 typedef struct {
-  unsigned fnNumber; /* function number for these counters */
-  unsigned numEntries;   /* number of entries stored */
+  uint64_t fnNumber; /* function number for these counters */
+  uint64_t numEntries;   /* number of entries stored */
 } PathProfileHeader;
 
 /*
  * Describes an entry in a tagged table for path counters.
  */
 typedef struct {
-  unsigned pathNumber;
-  unsigned pathCounter;
+  uint64_t pathNumber;
+  uint64_t pathCounter;
 } PathProfileTableEntry;
 
 #if defined(__cplusplus)

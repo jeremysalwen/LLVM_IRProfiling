@@ -157,16 +157,16 @@ int getOutFile() {
  * multiple different kinds of instrumentation.  For this reason, this function
  * may be called more than once.
  */
-void write_profiling_data(enum ProfilingType PT, unsigned *Start,
-                          unsigned NumElements) {
+void write_profiling_data(enum ProfilingType PT, uint64_t *Start,
+                         uint64_t NumElements) {
   int PTy;
   int outFile = getOutFile();
 
   /* Write out this record! */
   PTy = PT;
   if( write(outFile, &PTy, sizeof(int)) < 0 ||
-      write(outFile, &NumElements, sizeof(unsigned)) < 0 ||
-      write(outFile, Start, NumElements*sizeof(unsigned)) < 0 ) {
+      write(outFile, &NumElements, sizeof(uint64_t)) < 0 ||
+      write(outFile, Start, NumElements*sizeof(uint64_t)) < 0 ) {
     fprintf(stderr,"error: unable to write to output file.");
     exit(0);
   }

@@ -45,7 +45,7 @@ public:
   typedef std::pair<const BType*, const BType*> Edge;
 
 private:
-  typedef DenseMap<Edge, unsigned> EdgeWeights;
+  typedef DenseMap<Edge, uint64_t> EdgeWeights;
 
   /// \brief Count the number of times a transition between two blocks is
   /// executed.
@@ -71,7 +71,7 @@ public:
 
   /// getEdgeWeight - Return the number of times that a given edge was
   /// executed.
-  unsigned getEdgeWeight(Edge e) const {
+  uint64_t getEdgeWeight(Edge e) const {
     const FType *f = getFunction(e);
     assert((EdgeInformation.find(f) != EdgeInformation.end())
            && "No profiling information for function");
@@ -84,7 +84,7 @@ public:
 
   /// addEdgeWeight - Add 'weight' to the already stored execution count for
   /// this edge.
-  void addEdgeWeight(Edge e, unsigned weight) {
+  void addEdgeWeight(Edge e, uint64_t weight) {
     EdgeInformation[getFunction(e)][e] += weight;
   }
 };
@@ -105,7 +105,7 @@ private:
 
   /// The raw values for how many times each edge was traversed, values from
   /// multiple program runs are accumulated.
-  SmallVector<unsigned, 32> EdgeCounts;
+  SmallVector<uint64_t, 32> EdgeCounts;
 
 public:
   /// ProfileDataLoader ctor - Read the specified profiling data file, exiting
@@ -114,7 +114,7 @@ public:
 
   /// A special value used to represent the weight of an edge which has not
   /// been counted yet.
-  static const unsigned Uncounted;
+  static const uint64_t Uncounted;
 
   /// getNumExecutions - Return the number of times the target program was run
   /// to generate this profiling data.
@@ -128,7 +128,7 @@ public:
 
   /// getRawEdgeCounts - Return the raw profiling data, this is just a list of
   /// numbers with no mappings to edges.
-  ArrayRef<unsigned> getRawEdgeCounts() const { return EdgeCounts; }
+  ArrayRef<uint64_t> getRawEdgeCounts() const { return EdgeCounts; }
 };
 
 /// createProfileMetadataLoaderPass - This function returns a Pass that loads

@@ -29,8 +29,8 @@ typedef std::vector<ProfilePathEdge>::iterator ProfilePathEdgeIterator;
 typedef std::vector<BasicBlock*> ProfilePathBlockVector;
 typedef std::vector<BasicBlock*>::iterator ProfilePathBlockIterator;
 
-typedef std::map<unsigned int,ProfilePath*> ProfilePathMap;
-typedef std::map<unsigned int,ProfilePath*>::iterator ProfilePathIterator;
+typedef std::map<uint64_t,ProfilePath*> ProfilePathMap;
+typedef std::map<uint64_t,ProfilePath*>::iterator ProfilePathIterator;
 
 typedef std::map<Function*,unsigned int> FunctionPathCountMap;
 typedef std::map<Function*,ProfilePathMap> FunctionPathMap;
@@ -53,13 +53,13 @@ protected:
 
 class ProfilePath {
 public:
-  ProfilePath(unsigned int number, unsigned int count,
+  ProfilePath(uint64_t, uint64_t count,
               double countStdDev, PathProfileInfo* ppi);
 
   double getFrequency() const;
 
-  inline unsigned int getNumber() const { return _number; }
-  inline unsigned int getCount() const { return _count; }
+  inline uint64_t getNumber() const { return _number; }
+  inline uint64_t getCount() const { return _count; }
   inline double getCountStdDev() const { return _countStdDev; }
 
   ProfilePathEdgeVector* getPathEdges() const;
@@ -68,8 +68,8 @@ public:
   BasicBlock* getFirstBlockInPath() const;
 
 private:
-  unsigned int _number;
-  unsigned int _count;
+  uint64_t _number;
+  uint64_t _count;
   double _countStdDev;
 
   // double pointer back to the profiling info
@@ -87,12 +87,12 @@ class PathProfileInfo {
   Function* getCurrentFunction() const;
   BasicBlock* getCurrentFunctionEntry();
 
-  ProfilePath* getPath(unsigned int number);
-  unsigned int getPotentialPathCount();
+  ProfilePath* getPath(uint64_t number);
+  uint64_t getPotentialPathCount();
 
   ProfilePathIterator pathBegin();
   ProfilePathIterator pathEnd();
-  unsigned int pathsRun();
+  uint64_t pathsRun();
 
   static char ID; // Pass identification
   std::string argList;

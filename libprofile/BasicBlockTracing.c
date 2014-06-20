@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-static unsigned *ArrayStart, *ArrayEnd, *ArrayCursor;
+static uint64_t *ArrayStart, *ArrayEnd, *ArrayCursor;
 
 /* WriteAndFlushBBTraceData - write out the currently accumulated trace data
  * and reset the cursor to point to the beginning of the buffer.
@@ -36,7 +36,7 @@ static void BBTraceAtExitHandler(void) {
 }
 
 /* llvm_trace_basic_block - called upon hitting a new basic block. */
-void llvm_trace_basic_block (unsigned BBNum) {
+void llvm_trace_basic_block (uint64_t BBNum) {
   *ArrayCursor++ = BBNum;
   if (ArrayCursor == ArrayEnd)
     WriteAndFlushBBTraceData ();
@@ -47,16 +47,16 @@ void llvm_trace_basic_block (unsigned BBNum) {
  * handler and allocating the trace buffer.
  */
 int llvm_start_basic_block_tracing(int argc, const char **argv,
-                              unsigned *arrayStart, unsigned numElements) {
+                              uint64_t *arrayStart,uint64_t numElements) {
   int Ret;
   const unsigned BufferSize = 128 * 1024;
-  unsigned ArraySize;
+  uint64_t ArraySize;
 
   Ret = save_arguments(argc, argv);
 
   /* Allocate a buffer to contain BB tracing data */
-  ArraySize = BufferSize / sizeof (unsigned);
-  ArrayStart = malloc (ArraySize * sizeof (unsigned));
+  ArraySize = BufferSize / sizeof (uint64_t);
+  ArrayStart = malloc (ArraySize * sizeof (uint64_t));
   ArrayEnd = ArrayStart + ArraySize;
   ArrayCursor = ArrayStart;
 

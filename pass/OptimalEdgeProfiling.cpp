@@ -58,7 +58,7 @@ static llvm::RegisterPass<OptimalEdgeProfiler> X("insert-optimal-edge-profiling"
 
 inline static void printEdgeCounter(ProfileInfo::Edge e,
                                     BasicBlock* b,
-                                    unsigned i) {
+                                    uint64_t i) {
   DEBUG(dbgs() << "--Edge Counter for " << (e) << " in " \
                << ((b)?(b)->getName():"0") << " (# " << (i) << ")\n");
 }
@@ -77,7 +77,7 @@ bool OptimalEdgeProfiler::runOnModule(Module &M) {
   // with no successors an edge (BB,0) is reserved. These edges are necessary
   // to calculate a truly optimal maximum spanning tree and thus an optimal
   // instrumentation.
-  unsigned NumEdges = 0;
+ uint64_t NumEdges = 0;
 
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
     if (F->isDeclaration()) continue;
@@ -103,19 +103,19 @@ bool OptimalEdgeProfiler::runOnModule(Module &M) {
   // be calculated from other edge counters on reading the profile info back
   // in.
 
-  Type *Int32 = Type::getInt32Ty(M.getContext());
-  ArrayType *ATy = ArrayType::get(Int32, NumEdges);
+  Type *Int64 = Type::getInt64Ty(M.getContext());
+  ArrayType *ATy = ArrayType::get(Int64, NumEdges);
   GlobalVariable *Counters =
     new GlobalVariable(M, ATy, false, GlobalValue::InternalLinkage,
                        Constant::getNullValue(ATy), "OptEdgeProfCounters");
   NumEdgesInserted = 0;
 
   std::vector<Constant*> Initializer(NumEdges);
-  Constant *Zero = ConstantInt::get(Int32, 0);
-  Constant *Uncounted = ConstantInt::get(Int32, ProfileInfoLoader::Uncounted);
+  Constant *Zero = ConstantInt::get(Int64, 0);
+  Constant *Uncounted = ConstantInt::get(Int64, ProfileInfoLoader::Uncounted);
 
   // Instrument all of the edges not in MST...
-  unsigned i = 0;
+  uint64_t i = 0;
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
     if (F->isDeclaration()) continue;
     DEBUG(dbgs() << "Working on " << F->getName() << "\n");

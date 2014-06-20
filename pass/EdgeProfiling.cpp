@@ -56,7 +56,7 @@ bool EdgeProfiler::runOnModule(Module &M) {
   }
 
   std::set<BasicBlock*> BlocksToInstrument;
-  unsigned NumEdges = 0;
+  uint64_t NumEdges = 0;
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
     if (F->isDeclaration()) continue;
     // Reserve space for (0,entry) edge.
@@ -70,14 +70,14 @@ bool EdgeProfiler::runOnModule(Module &M) {
     }
   }
 
-  Type *ATy = ArrayType::get(Type::getInt32Ty(M.getContext()), NumEdges);
+  Type *ATy = ArrayType::get(Type::getInt64Ty(M.getContext()), NumEdges);
   GlobalVariable *Counters =
     new GlobalVariable(M, ATy, false, GlobalValue::InternalLinkage,
                        Constant::getNullValue(ATy), "EdgeProfCounters");
   NumEdgesInserted = NumEdges;
 
   // Instrument all of the edges...
-  unsigned i = 0;
+  uint64_t i = 0;
   for (Module::iterator F = M.begin(), E = M.end(); F != E; ++F) {
     if (F->isDeclaration()) continue;
     // Create counter for (0,entry) edge.

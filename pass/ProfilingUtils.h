@@ -16,6 +16,7 @@
 
 #ifndef PROFILINGUTILS_H
 #define PROFILINGUTILS_H
+#include <stdint.h>
 
 namespace llvm {
   class BasicBlock;
@@ -27,7 +28,7 @@ namespace llvm {
   void InsertProfilingInitCall(Function *MainFn, const char *FnName,
                                GlobalValue *Arr = 0,
                                PointerType *arrayType = 0);
-  void IncrementCounterInBlock(BasicBlock *BB, unsigned CounterNum,
+  void IncrementCounterInBlock(BasicBlock *BB, uint64_t CounterNum,
                                GlobalValue *CounterArray,
                                bool beginning = true);
   void InsertProfilingShutdownCall(Function *Callee, Module *Mod);

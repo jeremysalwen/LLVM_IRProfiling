@@ -57,12 +57,12 @@ BasicBlock* BallLarusNode::getBlock() {
 }
 
 // Returns the number of paths to the exit starting at the node.
-unsigned BallLarusNode::getNumberPaths() {
+uint64_t BallLarusNode::getNumberPaths() {
   return(_numberPaths);
 }
 
 // Sets the number of paths to the exit starting at the node.
-void BallLarusNode::setNumberPaths(unsigned numberPaths) {
+void BallLarusNode::setNumberPaths(uint64_t numberPaths) {
   _numberPaths = numberPaths;
 }
 
@@ -185,12 +185,12 @@ void BallLarusEdge::setType(EdgeType type) {
 
 // Returns the weight of this edge.  Used to decode path numbers to sequences
 // of basic blocks.
-unsigned BallLarusEdge::getWeight() {
+uint64_t BallLarusEdge::getWeight() {
   return(_weight);
 }
 
 // Sets the weight of the edge.  Used during path numbering.
-void BallLarusEdge::setWeight(unsigned weight) {
+void BallLarusEdge::setWeight(uint64_t weight) {
   _weight = weight;
 }
 
@@ -273,7 +273,7 @@ void BallLarusDag::calculatePathNumbers() {
     DEBUG(dbgs() << "calculatePathNumbers on " << node->getName() << "\n");
 
     bfsQueue.pop();
-    unsigned prevPathNumber = node->getNumberPaths();
+    uint64_t prevPathNumber = node->getNumberPaths();
     calculatePathNumbersFrom(node);
 
     // Check for DAG splitting
@@ -335,7 +335,7 @@ void BallLarusDag::calculatePathNumbers() {
 }
 
 // Returns the number of paths for the Dag.
-unsigned BallLarusDag::getNumberOfPaths() {
+uint64_t BallLarusDag::getNumberOfPaths() {
   return(getRoot()->getNumberPaths());
 }
 
@@ -446,7 +446,7 @@ void BallLarusDag::calculatePathNumbersFrom(BallLarusNode* node) {
     // The Exit node must be base case
     node->setNumberPaths(1);
   else {
-    unsigned sumPaths = 0;
+    uint64_t sumPaths = 0;
     BallLarusNode* succNode;
 
     for(BLEdgeIterator succ = node->succBegin(), end = node->succEnd();
