@@ -11,7 +11,7 @@ LDFLAGS+="-flto -Wl,-plugin-opt=also-emit-llvm"
 or whatever the equivalent is in your build system.  For make (assuming your 
 makefile can work with alternative cflags) it would just be
 
-make CC=clang CFLAGS=-flto LDFLAGS="-flto -wl,-plugin-opt=also-emit-llvm"
+make CC=clang CFLAGS=-flto LDFLAGS="-flto -Wl,-plugin-opt=also-emit-llvm"
 
 In general, just make sure you are compiling with clang, and set up your build 
 system to pass those additonal flags at the compilation and linking step, 
