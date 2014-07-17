@@ -132,9 +132,9 @@ int getOutFile() {
 
     /* Output the command line arguments to the file. */
     {
-      int PTy = ArgumentInfo;
+      uint64_t PTy = ArgumentInfo;
       int Zeros = 0;
-      if (write(OutFile, &PTy, sizeof(int)) < 0 ||
+      if (write(OutFile, &PTy, sizeof(uint64_t)) < 0 ||
           write(OutFile, &SavedArgsLength, sizeof(uint64_t)) < 0 ||
           write(OutFile, SavedArgs, SavedArgsLength) < 0 ) {
         fprintf(stderr,"error: unable to write to output file.");
@@ -159,7 +159,7 @@ int getOutFile() {
  */
 void write_profiling_data(enum ProfilingType PT, uint64_t *Start,
                          uint64_t NumElements) {
-  int PTy;
+  uint64_t PTy;
   int outFile = getOutFile();
 
   /* Write out this record! */
