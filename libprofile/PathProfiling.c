@@ -52,7 +52,7 @@ ftEntry_t* ft;
 uint64_t ftSize;
 
 /* write an array table to file */
-void writeArrayTable(uint64_t fNumber, ftEntry_t* ft, uint32_t* funcCount) {
+void writeArrayTable(uint64_t fNumber, ftEntry_t* ft, uint64_t* funcCount) {
   int outFile = getOutFile();
   uint64_t arrayHeaderLocation = 0;
   uint64_t arrayCurrentLocation = 0;
@@ -221,14 +221,14 @@ void llvm_decrement_path_count (uint64_t functionNumber, uint64_t pathNumber) {
  */
 static void pathProfAtExitHandler(void) {
   int outFile = getOutFile();
-  uint32_t i;
-  uint32_t header[2] = { PathInfo, 0 };
+  uint64_t i;
+  uint64_t header[2] = { PathInfo, 0 };
   uint32_t headerLocation;
   uint32_t currentLocation;
 
   /* skip over the header for now */
   headerLocation = lseek(outFile, 0, SEEK_CUR);
-  lseek(outFile, 2*sizeof(uint32_t), SEEK_CUR);
+  lseek(outFile, 2*sizeof(uint64_t), SEEK_CUR);
 
   /* Iterate through each function */
   for( i = 0; i < ftSize; i++ ) {

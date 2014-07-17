@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 static char *SavedArgs = 0;
-static unsigned SavedArgsLength = 0;
+static uint64_t SavedArgsLength = 0;
 static const char *SavedEnvVar = 0;
 
 static const char *OutputFilename = "llvmprof.out";
@@ -55,7 +55,7 @@ static void check_environment_variable(void) {
  * value.  The command line argument value overrides the environment variable.
  */
 int save_arguments(int argc, const char **argv) {
-  unsigned Length, i;
+  uint64_t Length, i;
   if (!SavedEnvVar && !SavedArgs) check_environment_variable();
   if (SavedArgs || !argv) return argc;  /* This can be called multiple times */
 
@@ -135,14 +135,14 @@ int getOutFile() {
       int PTy = ArgumentInfo;
       int Zeros = 0;
       if (write(OutFile, &PTy, sizeof(int)) < 0 ||
-          write(OutFile, &SavedArgsLength, sizeof(unsigned)) < 0 ||
+          write(OutFile, &SavedArgsLength, sizeof(uint64_t)) < 0 ||
           write(OutFile, SavedArgs, SavedArgsLength) < 0 ) {
         fprintf(stderr,"error: unable to write to output file.");
         exit(0);
       }
-      /* Pad out to a multiple of four bytes */
-      if (SavedArgsLength & 3) {
-        if (write(OutFile, &Zeros, 4-(SavedArgsLength&3)) < 0) {
+      /* Pad out to a multiple of eight bytes */
+      if (SavedArgsLength & 7) {
+        if (write(OutFile, &Zeros, 8-(SavedArgsLength&7)) < 0) {
           fprintf(stderr,"error: unable to write to output file.");
           exit(0);
         }
@@ -164,7 +164,7 @@ void write_profiling_data(enum ProfilingType PT, uint64_t *Start,
 
   /* Write out this record! */
   PTy = PT;
-  if( write(outFile, &PTy, sizeof(int)) < 0 ||
+  if( write(outFile, &PTy, sizeof(uint64_t)) < 0 ||
       write(outFile, &NumElements, sizeof(uint64_t)) < 0 ||
       write(outFile, Start, NumElements*sizeof(uint64_t)) < 0 ) {
     fprintf(stderr,"error: unable to write to output file.");

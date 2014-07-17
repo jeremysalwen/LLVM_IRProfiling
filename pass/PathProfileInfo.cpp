@@ -326,8 +326,8 @@ void PathProfileLoaderPass::buildFunctionRefs (Module &M) {
 // handle command like argument infor in the output file
 void PathProfileLoaderPass::handleArgumentInfo() {
   // get the argument list's length
-  unsigned savedArgsLength;
-  if( fread(&savedArgsLength, sizeof(unsigned), 1, _file) != 1 ) {
+  uint64_t savedArgsLength;
+  if( fread(&savedArgsLength, sizeof(uint64_t), 1, _file) != 1 ) {
     errs() << "warning: argument info header/data mismatch\n";
     return;
   }
@@ -342,21 +342,21 @@ void PathProfileLoaderPass::handleArgumentInfo() {
   delete [] args; // cleanup dynamic string
 
   // byte alignment
-  if (savedArgsLength & 3)
-    fseek(_file, 4-(savedArgsLength&3), SEEK_CUR);
+  if (savedArgsLength & 7)
+    fseek(_file, 8-(savedArgsLength&37), SEEK_CUR);
 }
 
 // Handle path profile information in the output file
 void PathProfileLoaderPass::handlePathInfo () {
   // get the number of functions in this profile
-  unsigned functionCount;
+  uint64_t functionCount;
   if( fread(&functionCount, sizeof(functionCount), 1, _file) != 1 ) {
     errs() << "warning: path info header/data mismatch\n";
     return;
   }
 
   // gather path information for each function
-  for (unsigned i = 0; i < functionCount; i++) {
+  for (uint64_t i = 0; i < functionCount; i++) {
     PathProfileHeader pathHeader;
     if( fread(&pathHeader, sizeof(pathHeader), 1, _file) != 1 ) {
       errs() << "warning: bad header for path function info\n";

@@ -23,12 +23,16 @@ using namespace llvm;
 
 // ByteSwap - Byteswap 'Var' if 'Really' is true.
 //
-static inline unsigned ByteSwap(unsigned Var, bool Really) {
+static inline uint64_t ByteSwap(uint64_t Var, bool Really) {
   if (!Really) return Var;
-  return ((Var & (255U<< 0U)) << 24U) |
-         ((Var & (255U<< 8U)) <<  8U) |
-         ((Var & (255U<<16U)) >>  8U) |
-         ((Var & (255U<<24U)) >> 24U);
+  return ((Var & (255UL<< 0U)) << 56U) |
+         ((Var & (255UL<< 8U)) <<  40U) |
+         ((Var & (255UL<<16U)) <<  24U) |
+         ((Var & (255UL<<24U)) << 8U) |
+		 ((Var & (255UL<< 32U)) >> 8U) |
+         ((Var & (255UL<< 40U)) >>  24U) |
+         ((Var & (255UL<<48U)) >> 40U) |
+         ((Var & (255UL<<56U)) >> 56U);
 }
 
 static uint64_t AddCounts(uint64_t A, uint64_t B) {
@@ -42,7 +46,7 @@ static void ReadProfilingBlock(const char *ToolName, FILE *F,
                                bool ShouldByteSwap,
                                std::vector<uint64_t> &Data) {
   // Read the number of entries...
-  unsigned NumEntries;
+  uint64_t NumEntries;
   if (fread(&NumEntries, sizeof(uint64_t), 1, F) != 1) {
     errs() << ToolName << ": data packet truncated at num entries!\n";
     perror(0);
@@ -93,8 +97,8 @@ ProfileInfoLoader::ProfileInfoLoader(const char *ToolName,
   }
 
   // Keep reading packets until we run out of them.
-  unsigned PacketType;
-  while (fread(&PacketType, sizeof(unsigned), 1, F) == 1) {
+  uint64_t PacketType;
+  while (fread(&PacketType, sizeof(uint64_t), 1, F) == 1) {
     // If the low eight bits of the packet are zero, we must be dealing with an
     // endianness mismatch.  Byteswap all words read from the profiling
     // information.
@@ -103,8 +107,8 @@ ProfileInfoLoader::ProfileInfoLoader(const char *ToolName,
 
     switch (PacketType) {
     case ArgumentInfo: {
-      unsigned ArgLength;
-      if (fread(&ArgLength, sizeof(unsigned), 1, F) != 1) {
+      uint64_t ArgLength;
+      if (fread(&ArgLength, sizeof(uint64_t), 1, F) != 1) {
         errs() << ToolName << ": arguments packet truncated!\n";
         perror(0);
         exit(1);
@@ -115,7 +119,7 @@ ProfileInfoLoader::ProfileInfoLoader(const char *ToolName,
       std::vector<char> Chars(ArgLength+4);
 
       if (ArgLength)
-        if (fread(&Chars[0], (ArgLength+3) & ~3, 1, F) != 1) {
+        if (fread(&Chars[0], (ArgLength+7) & ~7, 1, F) != 1) {
           errs() << ToolName << ": arguments packet truncated!\n";
           perror(0);
           exit(1);

@@ -373,7 +373,7 @@ namespace llvm {
   public:
     static StructType *get(LLVMContext& C) {
       return( StructType::get(
-                TypeBuilder<types::i<32>, xcompile>::get(C), // type
+                TypeBuilder<types::i<64>, xcompile>::get(C), // type
                 TypeBuilder<types::i<64>, xcompile>::get(C), // array size
                 TypeBuilder<types::i<8>*, xcompile>::get(C), // array/hash ptr
                 NULL));
@@ -1306,7 +1306,7 @@ void PathProfiler::runOnFunction(std::vector<Constant*> &ftInit,
     type = ProfilingHash;
 
   std::vector<Constant*> entryArray(3);
-  entryArray[0] = createIncrementConstant(type,32);
+  entryArray[0] = createIncrementConstant(type,64);
   entryArray[1] = createIncrementConstant(dag.getNumberOfPaths(),64);
   entryArray[2] = dag.getCounterArray() ?
     ConstantExpr::getBitCast(dag.getCounterArray(), voidPtr) :

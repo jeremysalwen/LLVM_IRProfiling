@@ -162,7 +162,7 @@ bool ProfileMetadataLoaderPass::runOnModule(Module &M) {
 
   ArrayRef<uint64_t> Counters = PDL.getRawEdgeCounts();
 
-  unsigned ReadCount = matchEdges(M, PB, Counters);
+  uint64_t ReadCount = matchEdges(M, PB, Counters);
 
   if (ReadCount != Counters.size()) {
     errs() << "WARNING: profile information is inconsistent with "

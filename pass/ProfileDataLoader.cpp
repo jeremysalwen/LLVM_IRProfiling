@@ -48,11 +48,11 @@ static void ReadProfilingData(const char *ToolName, FILE *F,
 
 /// ReadProfilingNumEntries - Read how many entries are in this profiling data
 /// packet.
-static unsigned ReadProfilingNumEntries(const char *ToolName, FILE *F,
+static uint64_t ReadProfilingNumEntries(const char *ToolName, FILE *F,
                                         bool ShouldByteSwap) {
-  uint32_t Entry;
-  ReadProfilingData<uint32_t>(ToolName, F, &Entry, 1);
-  return ShouldByteSwap ? ByteSwap_32(Entry) : Entry;
+  uint64_t Entry;
+  ReadProfilingData<uint64_t>(ToolName, F, &Entry, 1);
+  return ShouldByteSwap ? ByteSwap_64(Entry) : Entry;
 }
 
 /// ReadProfilingBlock - Read the number of entries in the next profiling data
@@ -61,7 +61,7 @@ static void ReadProfilingBlock(const char *ToolName, FILE *F,
                                bool ShouldByteSwap,
                                SmallVectorImpl<uint64_t> &Data) {
   // Read the number of entries...
-  unsigned NumEntries = ReadProfilingNumEntries(ToolName, F, ShouldByteSwap);
+  uint64_t NumEntries = ReadProfilingNumEntries(ToolName, F, ShouldByteSwap);
 
   // Read in the data.
   SmallVector<uint64_t, 8> TempSpace(NumEntries);
@@ -72,7 +72,7 @@ static void ReadProfilingBlock(const char *ToolName, FILE *F,
     Data.resize(NumEntries, ProfileDataLoader::Uncounted);
 
   // Accumulate the data we just read into the existing data.
-  for (unsigned i = 0; i < NumEntries; ++i) {
+  for (uint64_t i = 0; i < NumEntries; ++i) {
     uint64_t Entry = ShouldByteSwap ? ByteSwap_64(TempSpace[i]) : TempSpace[i];
     Data[i] = AddCounts(Entry, Data[i]);
   }
@@ -84,13 +84,13 @@ static void ReadProfilingArgBlock(const char *ToolName, FILE *F,
                                   bool ShouldByteSwap,
                                   SmallVectorImpl<std::string> &CommandLines) {
   // Read the number of bytes ...
-  unsigned ArgLength = ReadProfilingNumEntries(ToolName, F, ShouldByteSwap);
+  uint64_t ArgLength = ReadProfilingNumEntries(ToolName, F, ShouldByteSwap);
 
   // Read in the arguments (if there are any to read).  Round up the length to
   // the nearest 4-byte multiple.
   SmallVector<char, 8> Args(ArgLength+4);
   if (ArgLength)
-    ReadProfilingData<char>(ToolName, F, Args.data(), (ArgLength+3) & ~3);
+    ReadProfilingData<char>(ToolName, F, Args.data(), (ArgLength+7) & ~7);
 
   // Store the arguments.
   CommandLines.push_back(std::string(&Args[0], &Args[ArgLength]));
@@ -109,8 +109,8 @@ ProfileDataLoader::ProfileDataLoader(const char *ToolName,
                        Filename + "': ");
 
   // Keep reading packets until we run out of them.
-  unsigned PacketType;
-  while (fread(&PacketType, sizeof(unsigned), 1, F) == 1) {
+  uint64_t PacketType;
+  while (fread(&PacketType, sizeof(uint64_t), 1, F) == 1) {
     // If the low eight bits of the packet are zero, we must be dealing with an
     // endianness mismatch.  Byteswap all words read from the profiling
     // information.  This can happen when the compiler host and target have
