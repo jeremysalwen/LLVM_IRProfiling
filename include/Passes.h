@@ -7,6 +7,6 @@ namespace llvm {
 extern char &ProfileEstimatorPassID;
 extern char &PathProfileLoaderPassID;
 extern char &ProfileMetadataLoaderPassID;
-extern char &ProfileLoaderPassID;
+extern char &ProfileInfoLoaderPassID;
 }
 #endif //BCPROF_ANALYSIS_PASSES_H
