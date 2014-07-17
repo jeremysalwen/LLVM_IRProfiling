@@ -1,4 +1,4 @@
-//===- ProfileInfoLoaderPass.cpp - LLVM Pass to load profile info ---------===//
+//===- ProfileInfoProfileInfoLoaderPass.cpp - LLVM Pass to load profile info ---------===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -37,19 +37,19 @@ ProfileInfoFilename("profile-info-file", cl::init("llvmprof.out"),
                     cl::value_desc("filename"),
                     cl::desc("Profile file loaded by -profile-loader"));
 
-char LoaderPass::ID = 0;
-static RegisterPass<LoaderPass> X("profile-loader",
+char ProfileInfoLoaderPass::ID = 0;
+static RegisterPass<ProfileInfoLoaderPass> X("profile-loader",
               "Load profile information from llvmprof.out", false, true);
 static RegisterAnalysisGroup<ProfileInfo> R(X);
 
-char &llvm::ProfileLoaderPassID = LoaderPass::ID;
+char &llvm::ProfileInfoLoaderPassID = ProfileInfoLoaderPass::ID;
 
-LoaderPass::LoaderPass(const std::string &filename)
+ProfileInfoLoaderPass::ProfileInfoLoaderPass(const std::string &filename)
       : ModulePass(ID), Filename(filename) {
       if (filename.empty()) Filename = ProfileInfoFilename;
     }
 
-void LoaderPass::readEdgeOrRemember(Edge edge, Edge &tocalc, 
+void ProfileInfoLoaderPass::readEdgeOrRemember(Edge edge, Edge &tocalc, 
                                     unsigned &uncalc, double &count) {
   double w;
   if ((w = getEdgeWeight(edge)) == MissingValue) {
@@ -62,7 +62,7 @@ void LoaderPass::readEdgeOrRemember(Edge edge, Edge &tocalc,
 
 // recurseBasicBlock - Visits all neighbours of a block and then tries to
 // calculate the missing edge values.
-void LoaderPass::recurseBasicBlock(const BasicBlock *BB) {
+void ProfileInfoLoaderPass::recurseBasicBlock(const BasicBlock *BB) {
 
   // break recursion if already visited
   if (BBisUnvisited.find(BB) == BBisUnvisited.end()) return;
@@ -84,7 +84,7 @@ void LoaderPass::recurseBasicBlock(const BasicBlock *BB) {
   }
 }
 
-void LoaderPass::readEdge(ProfileInfo::Edge e,
+void ProfileInfoLoaderPass::readEdge(ProfileInfo::Edge e,
                           std::vector<uint64_t> &ECs) {
   if (ReadCount < ECs.size()) {
     double weight = ECs[ReadCount++];
@@ -105,7 +105,7 @@ void LoaderPass::readEdge(ProfileInfo::Edge e,
   }
 }
 
-bool LoaderPass::runOnModule(Module &M) {
+bool ProfileInfoLoaderPass::runOnModule(Module &M) {
   ProfileInfoLoader PIL("profile-loader", Filename);
 
   EdgeInformation.clear();

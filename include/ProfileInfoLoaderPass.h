@@ -6,14 +6,14 @@
 #include "ProfileInfo.h"
 
 namespace llvm {
-  class LoaderPass : public ModulePass, public ProfileInfo {
+  class ProfileInfoLoaderPass : public ModulePass, public ProfileInfo {
     std::string Filename;
     std::set<Edge> SpanningTree;
     std::set<const BasicBlock*> BBisUnvisited;
     unsigned ReadCount;
   public:
     static char ID; // Class identification, replacement for typeinfo
-    explicit LoaderPass(const std::string &filename = "");
+    explicit ProfileInfoLoaderPass(const std::string &filename = "");
 
     virtual void getAnalysisUsage(AnalysisUsage &AU) const {
       AU.setPreservesAll();
