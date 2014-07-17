@@ -11,6 +11,12 @@ namespace llvm {
     std::set<Edge> SpanningTree;
     std::set<const BasicBlock*> BBisUnvisited;
     unsigned ReadCount;
+
+	 // recurseBasicBlock() - Calculates the edge weights for as much basic
+    // blocks as possbile.
+    virtual void recurseBasicBlock(const BasicBlock *BB);
+    virtual void readEdgeOrRemember(Edge, Edge&, unsigned &, double &);
+    virtual void readEdge(ProfileInfo::Edge, std::vector<uint64_t>&);
   public:
     static char ID; // Class identification, replacement for typeinfo
     explicit ProfileInfoLoaderPass(const std::string &filename = "");
@@ -23,11 +29,7 @@ namespace llvm {
       return "Profiling information loader";
     }
 
-    // recurseBasicBlock() - Calculates the edge weights for as much basic
-    // blocks as possbile.
-    virtual void recurseBasicBlock(const BasicBlock *BB);
-    virtual void readEdgeOrRemember(Edge, Edge&, unsigned &, double &);
-    virtual void readEdge(ProfileInfo::Edge, std::vector<uint64_t>&);
+
 
     /// getAdjustedAnalysisPointer - This method is used when a pass implements
     /// an analysis interface through multiple inheritance.  If needed, it
