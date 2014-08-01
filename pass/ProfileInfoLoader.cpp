@@ -112,8 +112,10 @@ static bool ReadBBTraceProfilingBlock(const char *ToolName, FILE *F,
     }
   }
   if(Data.back()==-1) {
+	  Data.pop_back();
 	  return true;
   }
+	return false;
 }
 
 static void SkipProfilingBlock(const char *ToolName, FILE *F,

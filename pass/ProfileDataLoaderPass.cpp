@@ -16,6 +16,8 @@
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "profile-metadata-loader"
 #include "Passes.h"
+#include "ProfileCommon.h"
+
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/Statistic.h"
 #include "ProfileDataLoader.h"

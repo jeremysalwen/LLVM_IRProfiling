@@ -74,6 +74,9 @@ namespace llvm {
     // FunctionInformation - Count the number of times a function is executed.
     std::map<const FType*, double> FunctionInformation;
 
+	// BBTraceInformation - Complete basic block trace of the program
+	std::vector<BasicBlock*> BBTrace;
+
     ProfileInfoT<MachineFunction, MachineBasicBlock> *MachineProfile;
   public:
     static char ID; // Class identification, replacement for typeinfo
@@ -132,6 +135,10 @@ namespace llvm {
     EdgeWeights &getEdgeWeights (const FType *F) {
       return EdgeInformation[F];
     }
+
+	std::vector<BasicBlock*> &getBBTrace() {
+		return BBTrace;
+	}
 
     //===------------------------------------------------------------------===//
     /// Analysis Update Methods

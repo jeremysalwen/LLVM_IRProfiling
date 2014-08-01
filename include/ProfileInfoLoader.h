@@ -77,6 +77,9 @@ public:
     return OptimalEdgeCounts;
   }
 
+  const std::vector<uint64_t> &getRawBBTrace() const {
+	  return BBTrace;
+  }
 };
 
 } // End llvm namespace

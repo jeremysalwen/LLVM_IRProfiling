@@ -13,9 +13,11 @@
 //===----------------------------------------------------------------------===//
 #define DEBUG_TYPE "profile-loader"
 
+#include "ProfileCommon.h"
 #include "ProfileInfoLoaderPass.h"
 #include "ProfileInfoLoader.h"
 #include "Passes.h"
+
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/Statistic.h"
 #include "llvm/IR/BasicBlock.h"
@@ -214,6 +216,20 @@ bool ProfileInfoLoaderPass::runOnModule(Module &M) {
              << "the current program!\n";
     }
   }
-
+  BBTrace.clear();
+  const std::vector<uint64_t>& trace=PIL.getRawBBTrace();
+  if(trace.size()>0) {
+	  BBTrace.resize(trace.size());
+	  std::vector<BasicBlock*> BBmap;
+	  std::unordered_map<BasicBlock*, int> reverse_BBmap;
+	  label_basic_blocks(M,BBmap,reverse_BBmap);
+      for(size_t i=0; i<trace.size(); i++) {
+		  if(trace[i]>=BBmap.size()) {
+				  errs() << "Error:  Basic Block trace contained invalid block id " << trace[i] << "\n";
+			     exit(1);
+		  }
+		  BBTrace[i]=BBmap[trace[i]];
+	  }
+  }
   return false;
 }
