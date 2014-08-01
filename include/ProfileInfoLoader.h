@@ -34,6 +34,9 @@ class ProfileInfoLoader {
   std::vector<uint64_t>    EdgeCounts;
   std::vector<uint64_t>    OptimalEdgeCounts;
   std::vector<uint64_t>    BBTrace;
+private:
+	//This variable makes sure we don't append basic block traces to each other
+	bool BBTraceFinished=false;
 public:
   // ProfileInfoLoader ctor - Read the specified profiling data file, exiting
   // the program if the file is invalid or broken.

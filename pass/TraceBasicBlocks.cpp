@@ -47,8 +47,8 @@ RegisterPass<TraceBasicBlocks> X("trace-basic-blocks",
                                        unsigned BBNumber) {
 
   // Insert the call after any alloca or PHI instructions.
-  BasicBlock::iterator InsertPos = BB->begin();
-  while (isa<AllocaInst>(InsertPos) || isa<PHINode>(InsertPos))  ++InsertPos;
+  BasicBlock::iterator InsertPos = BB->getFirstInsertionPt();
+  while (isa<AllocaInst>(InsertPos))  ++InsertPos;
   CallInst::Create(InstrFn, ConstantInt::get (Type::getInt64Ty(*Context), BBNumber),
                "", InsertPos);
 }

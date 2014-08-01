@@ -80,6 +80,54 @@ static void ReadProfilingBlock(const char *ToolName, FILE *F,
     }
   }
 }
+//When we do basic block tracing, the composition operator is concatenation, not summing
+//this function reads the profiling block and /appends/ it to the array instead of adding it like in path/edge profiling
+//returns true if this is the last block
+static bool ReadBBTraceProfilingBlock(const char *ToolName, FILE *F,
+                               bool ShouldByteSwap,
+                               std::vector<uint64_t> &Data) {
+	 // Read the number of entries...
+  uint64_t NumEntries;
+  if (fread(&NumEntries, sizeof(uint64_t), 1, F) != 1) {
+    errs() << ToolName << ": data packet truncated at num entries!\n";
+    perror(0);
+    exit(1);
+  }
+  NumEntries = ByteSwap(NumEntries, ShouldByteSwap);
+
+  uint64_t NewEntryStart=Data.size();
+  Data.resize(Data.size()+NumEntries);
+	
+  // Read in the block of data...
+  if (fread(&Data[NewEntryStart], sizeof(uint64_t)*NumEntries ,1, F) != 1) {
+    errs() << ToolName << ": data packet truncated at profiling block!\n";
+    perror(0);
+    exit(1);
+  }
+	
+  // Byte swap if necessary
+  if (ShouldByteSwap) {
+    for (uint64_t i = NewEntryStart; i != Data.size(); ++i) {
+      Data[i] = ByteSwap(Data[i], true);
+    }
+  }
+  if(Data.back()==-1) {
+	  return true;
+  }
+}
+
+static void SkipProfilingBlock(const char *ToolName, FILE *F,
+                               bool ShouldByteSwap) {
+  // Read the number of entries...
+  uint64_t NumEntries;
+  if (fread(&NumEntries, sizeof(uint64_t), 1, F) != 1) {
+    errs() << ToolName << ": data packet truncated at num entries!\n";
+    perror(0);
+    exit(1);
+  }
+  NumEntries = ByteSwap(NumEntries, ShouldByteSwap);
+  fseek(F,NumEntries*sizeof(uint64_t),SEEK_CUR);
+}
 
 const uint64_t ProfileInfoLoader::Uncounted = ~0U;
 
@@ -145,7 +193,12 @@ ProfileInfoLoader::ProfileInfoLoader(const char *ToolName,
       break;
 
     case BBTraceInfo:
-      ReadProfilingBlock(ToolName, F, ShouldByteSwap, BBTrace);
+	  if(BBTraceFinished) {
+		  errs() << ToolName << ": Warning, tools can only handle one basic block trace per llvmprof.out file.  All subsequent traces are being ignored\n";
+		  SkipProfilingBlock (ToolName, F, ShouldByteSwap);
+	  } else {
+ 	     BBTraceFinished=ReadBBTraceProfilingBlock(ToolName, F, ShouldByteSwap, BBTrace);
+	  }
       break;
 
     default:

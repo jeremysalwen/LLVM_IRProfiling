@@ -31,6 +31,7 @@ static void WriteAndFlushBBTraceData () {
  * data and free the trace buffer.
  */
 static void BBTraceAtExitHandler(void) {
+ *ArrayCursor++=-1; //We put in a -1 to indicate the end of a trace
   WriteAndFlushBBTraceData ();
   free (ArrayStart);
 }
