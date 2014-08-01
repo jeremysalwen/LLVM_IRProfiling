@@ -14,12 +14,10 @@
 
 #include "ProfileDataLoader.h"
 #include "llvm/ADT/ArrayRef.h"
-#include "llvm/ADT/OwningPtr.h"
 #include "ProfileDataTypes.h"
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/system_error.h"
 #include <cstdio>
 #include <cstdlib>
 using namespace llvm;
