@@ -43,6 +43,7 @@ char ProfileInfoLoaderPass::ID = 0;
 static RegisterPass<ProfileInfoLoaderPass> X("profile-loader",
               "Load profile information from llvmprof.out", false, true);
 static RegisterAnalysisGroup<ProfileInfo> R(X);
+static RegisterAnalysisGroup<BBTraceStream> S(X);
 
 char &llvm::ProfileInfoLoaderPassID = ProfileInfoLoaderPass::ID;
 
@@ -232,4 +233,15 @@ bool ProfileInfoLoaderPass::runOnModule(Module &M) {
 	  }
   }
   return false;
+}
+
+
+bool ProfileInfoLoaderPass::startBBTraceStream() {
+	BBTraceIndex=0;
+	return true;
+}
+
+BasicBlock* ProfileInfoLoaderPass::BBTraceStreamNext() {
+	if(BBTraceIndex==BBTrace.size()) return NULL;
+	return BBTrace[BBTraceIndex++];
 }

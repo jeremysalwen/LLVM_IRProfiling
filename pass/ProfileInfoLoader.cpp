@@ -21,19 +21,6 @@
 #include <cstdlib>
 using namespace llvm;
 
-// ByteSwap - Byteswap 'Var' if 'Really' is true.
-//
-static inline uint64_t ByteSwap(uint64_t Var, bool Really) {
-  if (!Really) return Var;
-  return ((Var & (255UL<< 0U)) << 56U) |
-         ((Var & (255UL<< 8U)) <<  40U) |
-         ((Var & (255UL<<16U)) <<  24U) |
-         ((Var & (255UL<<24U)) << 8U) |
-		 ((Var & (255UL<< 32U)) >> 8U) |
-         ((Var & (255UL<< 40U)) >>  24U) |
-         ((Var & (255UL<<48U)) >> 40U) |
-         ((Var & (255UL<<56U)) >> 56U);
-}
 
 static uint64_t AddCounts(uint64_t A, uint64_t B) {
   // If either value is undefined, use the other.
@@ -42,7 +29,7 @@ static uint64_t AddCounts(uint64_t A, uint64_t B) {
   return A + B;
 }
 
-static void ReadProfilingBlock(const char *ToolName, FILE *F,
+void llvm::ReadProfilingBlock(const char *ToolName, FILE *F,
                                bool ShouldByteSwap,
                                std::vector<uint64_t> &Data) {
   // Read the number of entries...
@@ -83,7 +70,7 @@ static void ReadProfilingBlock(const char *ToolName, FILE *F,
 //When we do basic block tracing, the composition operator is concatenation, not summing
 //this function reads the profiling block and /appends/ it to the array instead of adding it like in path/edge profiling
 //returns true if this is the last block
-static bool ReadBBTraceProfilingBlock(const char *ToolName, FILE *F,
+bool llvm::ReadBBTraceProfilingBlock(const char *ToolName, FILE *F,
                                bool ShouldByteSwap,
                                std::vector<uint64_t> &Data) {
 	 // Read the number of entries...
@@ -118,7 +105,7 @@ static bool ReadBBTraceProfilingBlock(const char *ToolName, FILE *F,
 	return false;
 }
 
-static void SkipProfilingBlock(const char *ToolName, FILE *F,
+void llvm::SkipProfilingBlock(const char *ToolName, FILE *F,
                                bool ShouldByteSwap) {
   // Read the number of entries...
   uint64_t NumEntries;
