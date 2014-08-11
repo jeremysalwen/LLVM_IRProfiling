@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+//The special trace label for end of trace
+static const uint64_t BBEOF=-1;
+
 static uint64_t *ArrayStart, *ArrayEnd, *ArrayCursor;
 
 /* WriteAndFlushBBTraceData - write out the currently accumulated trace data
@@ -31,7 +34,7 @@ static void WriteAndFlushBBTraceData () {
  * data and free the trace buffer.
  */
 static void BBTraceAtExitHandler(void) {
- *ArrayCursor++=-1; //We put in a -1 to indicate the end of a trace
+ *ArrayCursor++=BBEOF; //We put in a -1 to indicate the end of a trace
   WriteAndFlushBBTraceData ();
   free (ArrayStart);
 }

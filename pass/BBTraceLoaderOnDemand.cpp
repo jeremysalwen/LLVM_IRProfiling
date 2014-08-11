@@ -124,16 +124,22 @@ namespace {
 				}
 				std::unordered_map<BasicBlock*, int> reverse_map;
 				label_basic_blocks(M,BBMap, reverse_map); 
+				
 			}
 			virtual const char *getPassName() const {
 				return "OnDemandBBTrace";
 			}
 			virtual bool startBBTraceStream() {
 				if(started) {
+					dbgs()<<"Failed start\n";
 					return false;
 				} else {
 					started=true;
 					loadNextBBTracePacket();
+					if(buffer.empty()) {
+						errs()  << "ERROR: No basic block trace found in profiling file "<<Filename<<"\n";
+						exit(1);
+					}
 					return true;
 				}
 			}
@@ -141,7 +147,15 @@ namespace {
 				if(buffer.empty())  {
 					return NULL;
 				}
-				BasicBlock* result=BBMap[*it++];
+				uint64_t bbid=*it++;
+				BasicBlock* result;
+				if(bbid==BBTraceStream::FunCallID) {
+					result=BBTraceStream::FunCallTag;
+				} else if(bbid==BBTraceStream::FunRetID) {
+					result=BBTraceStream::FunRetTag;
+				} else {
+					result=BBMap[bbid];
+				}
 				if(it==buffer.end()) {
 					loadNextBBTracePacket();
 				}
