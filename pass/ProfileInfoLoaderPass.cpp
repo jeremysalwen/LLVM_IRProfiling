@@ -220,24 +220,44 @@ bool ProfileInfoLoaderPass::runOnModule(Module &M) {
 	BBTrace.clear();
 	const std::vector<uint64_t>& trace=PIL.getRawBBTrace();
 	if(trace.size()>0) {
-		BBTrace.resize(trace.size());
-		std::vector<BasicBlock*> BBmap;
+		std::vector<BasicBlock*> BBMap;
 		std::unordered_map<BasicBlock*, int> reverse_BBmap;
-		label_basic_blocks(M,BBmap,reverse_BBmap);
+		label_basic_blocks(M,BBMap,reverse_BBmap);
 		for(size_t i=0; i<trace.size(); i++) {
-			BasicBlock* b;
-			if(trace[i]==BBTraceStream::FunCallID) {
-				b=BBTraceStream::FunCallTag;
-			} else if(trace[i] ==BBTraceStream::FunRetID) {
-				b=BBTraceStream::FunRetTag;
-			} else if(trace[i]>=BBmap.size()) {
-				errs() << "Error:  Basic Block trace contained invalid block id " << trace[i] << "\n";
-				exit(1);
-			} else{
-				b=BBmap[trace[i]];
+			BBTraceStream::Packet packet;
+			
+			uint64_t bbid=trace[i];
+			if(bbid==BBTraceStream::MemOpID) {
+				i++;
+				if(i>=trace.size()) {
+					errs()<<"Error, truncated MemOp packet in Basic Block trace stream\n";
+					exit(1);
+				}
+				packet.ptype=BBTraceStream::PacketType::MemOp;
+				packet.MemAddr=trace[i];
+			}else if(bbid==BBTraceStream::FunCallID) {
+				i++;
+				if(i>=trace.size()) {
+					errs()<<"Error, truncated FunCall packet in Basic Block trace stream\n";
+					exit(1);
+				}
+				packet.ptype=BBTraceStream::FunCall;
+				if(trace[i]>BBMap.size()) {
+					errs() <<"Error, bad block ID in FunCall packet in Basic Block Trace\n";
+					exit(1);
+				}
+				packet.BB=BBMap[trace[i]];
+			} else if(bbid==BBTraceStream::FunRetID) {
+				packet.ptype=BBTraceStream::FunRet;
+			} else {
+				packet.ptype=BBTraceStream::BB;
+					if(bbid>BBMap.size()) {
+					errs() <<"Error, bad block ID in Basic Block Trace\n";
+					exit(1);
+				}
+				packet.BB=BBMap[bbid];
 			}
-
-			BBTrace[i]=b;
+			BBTrace.push_back(packet);
 		}
 	}
 	return false;
@@ -249,7 +269,11 @@ bool ProfileInfoLoaderPass::startBBTraceStream() {
 	return true;
 }
 
-BasicBlock* ProfileInfoLoaderPass::BBTraceStreamNext() {
-	if(BBTraceIndex==BBTrace.size()) return NULL;
+BBTraceStream::Packet ProfileInfoLoaderPass::BBTraceStreamNext() {
+	if(BBTraceIndex==BBTrace.size()){
+		BBTraceStream::Packet EOFPacket;
+		EOFPacket.ptype=BBTraceStream::BBEOF;
+		return EOFPacket;
+	}
 	return BBTrace[BBTraceIndex++];
 }

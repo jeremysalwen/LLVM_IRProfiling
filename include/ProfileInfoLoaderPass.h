@@ -47,7 +47,7 @@ namespace llvm {
 
     //The functions to implement BBTraceStream
 	virtual bool startBBTraceStream();
-	virtual BasicBlock* BBTraceStreamNext();
+	virtual BBTraceStream::Packet BBTraceStreamNext();
 		  
     /// run - Load the profile information from the specified file.
     virtual bool runOnModule(Module &M);

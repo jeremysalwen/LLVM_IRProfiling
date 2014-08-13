@@ -17,8 +17,13 @@
 #include "llvm/IR/InstrTypes.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/raw_ostream.h"
+
+#include "BBTraceStream.h"
+
 #include <cstdio>
 #include <cstdlib>
+
+
 using namespace llvm;
 
 
@@ -98,7 +103,7 @@ bool llvm::ReadBBTraceProfilingBlock(const char *ToolName, FILE *F,
       Data[i] = ByteSwap(Data[i], true);
     }
   }
-  if(Data.back()==-1) {
+  if(Data.back()==BBTraceStream::BBEOFID) {
 	  Data.pop_back();
 	  return true;
   }

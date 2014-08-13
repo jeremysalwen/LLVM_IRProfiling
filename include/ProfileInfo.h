@@ -25,6 +25,9 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/raw_ostream.h"
+
+#include "BBTraceStream.h"
+
 #include <cassert>
 #include <map>
 #include <set>
@@ -75,7 +78,7 @@ namespace llvm {
     std::map<const FType*, double> FunctionInformation;
 
 	// BBTraceInformation - Complete basic block trace of the program
-	std::vector<BasicBlock*> BBTrace;
+	std::vector<BBTraceStream::Packet> BBTrace;
 
     ProfileInfoT<MachineFunction, MachineBasicBlock> *MachineProfile;
   public:
@@ -136,7 +139,7 @@ namespace llvm {
       return EdgeInformation[F];
     }
 
-	std::vector<BasicBlock*> &getBBTrace() {
+	std::vector<BBTraceStream::Packet> &getBBTrace() {
 		return BBTrace;
 	}
 

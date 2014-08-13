@@ -3,10 +3,6 @@
 
 using namespace llvm;
 
-const std::aligned_storage<1, alignof(BasicBlock)> BBTraceStream::FunCallTagBB;
-const std::aligned_storage<1, alignof(BasicBlock)> BBTraceStream::FunRetTagBB;
-constexpr BasicBlock* BBTraceStream::FunCallTag;
-constexpr BasicBlock* BBTraceStream::FunRetTag;
 
 char BBTraceStream::ID = 0;
 static RegisterAnalysisGroup<BBTraceStream> P("Basic Block Trace");
@@ -34,8 +30,10 @@ namespace {
 		virtual bool startBBTraceStream() {
 			return false;
 		}
-		virtual BasicBlock* BBTraceStreamNext() {
-			return NULL;
+		virtual BBTraceStream::Packet BBTraceStreamNext() {
+		 BBTraceStream::Packet packet;
+			packet.ptype=BBTraceStream::PacketType::BBEOF;
+			return packet;
 		}
 	};
 }

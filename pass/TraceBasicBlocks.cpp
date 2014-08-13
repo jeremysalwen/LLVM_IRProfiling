@@ -20,6 +20,8 @@
 #include "llvm/Transforms/Utils/BasicBlockUtils.h"
 #include "llvm/Transforms/Instrumentation.h"
 #include "llvm/IR/Instructions.h"
+
+#include "llvm/Support/CommandLine.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/Debug.h"
 
@@ -28,15 +30,20 @@
 #include <set>
 using namespace llvm;
 
+static cl::opt<bool> TraceMemoryOpt ("trace-mem", cl::desc("Enable load/store tracing"));
+
 namespace {
 	class TraceBasicBlocks : public ModulePass {
+		bool TraceMemory;
 		LLVMContext* Context;
+		void InsertMemoryTracingCall(BasicBlock*BB, Constant* InstrFn);
 		void InsertRetInstrumentationCall(TerminatorInst* TI, Constant* InstrFn);
 		void InsertInstrumentationCall(BasicBlock* BB, Constant* InstrFn, uint64_t BBNumber);	  
 		bool runOnModule(Module &M);
 		public:
 			static char ID; // Pass identification, replacement for typeid
-			TraceBasicBlocks() : ModulePass(ID) {}
+			TraceBasicBlocks() :ModulePass(ID) {TraceMemory=TraceMemoryOpt;}
+			TraceBasicBlocks(bool TraceMem) : ModulePass(ID) {TraceMemory=TraceMem;}
 	};
 
 	// Register the path profiler as a pass
@@ -56,8 +63,34 @@ void TraceBasicBlocks::InsertInstrumentationCall (BasicBlock *BB,
 	// Insert the call after any alloca or PHI instructions.i
 	BasicBlock::iterator InsertPos = BB->getFirstInsertionPt();
 	while (isa<AllocaInst>(InsertPos))  ++InsertPos;
-	CallInst::Create(InstrFn, ConstantInt::get (Type::getInt64Ty(*Context), BBNumber),
-	                 "", InsertPos);
+	CallInst::Create(InstrFn, ConstantInt::get (Type::getInt64Ty(*Context), BBNumber), "", InsertPos);
+}
+
+static Value* getMemInstrAddress(Instruction* I) {
+	if(LoadInst* li=dyn_cast<LoadInst>(I)) {
+		return li->getPointerOperand();
+	}
+	if(StoreInst* li=dyn_cast<StoreInst>(I)) {
+		return li->getPointerOperand();
+	}
+	if(AtomicCmpXchgInst* li=dyn_cast<AtomicCmpXchgInst>(I)) {
+		return li->getPointerOperand();
+	}
+	if(AtomicRMWInst* li=dyn_cast<AtomicRMWInst>(I)) {
+		return li->getPointerOperand();
+	}
+	return NULL;
+}
+ 
+void TraceBasicBlocks::InsertMemoryTracingCall(BasicBlock*BB, Constant* InstrFn) {
+	for(BasicBlock::iterator it = BB->getFirstInsertionPt(), e=BB->end(); it!=e; ++it) {
+		if(Value* MemAddress=getMemInstrAddress(it)) {
+			CallInst::Create(InstrFn, ConstantInt::get (Type::getInt64Ty(*Context), BBTraceStream::MemOpID),"", it);
+			 PtrToIntInst* castInstr=new PtrToIntInst (MemAddress, Type::getInt64Ty(*Context),"", it);
+			CallInst::Create(InstrFn,castInstr,"", it);
+		}
+	}
+	
 }
 
 bool TraceBasicBlocks::runOnModule(Module &M)  {
@@ -86,6 +119,9 @@ bool TraceBasicBlocks::runOnModule(Module &M)  {
 				InsertRetInstrumentationCall(TI,InstrFn);
 			}
 			InsertInstrumentationCall (BB, InstrFn, BBNumber);
+			if(TraceMemory) {
+				InsertMemoryTracingCall (BB,InstrFn);
+			}
 			++BBNumber;
 		}
 		//on Entry we emit the FunCall block.

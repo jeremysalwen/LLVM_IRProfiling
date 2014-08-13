@@ -92,6 +92,20 @@ namespace {
 				}
 			}
 		}
+		uint64_t getNextUint() {
+			uint64_t result=*it++;
+			if(it==buffer.end()) {
+				loadNextBBTracePacket();
+			}
+			return result;
+		}
+		BasicBlock* uintToBB(uint64_t id) {
+			if(id>=BBMap.size())  {
+				errs() <<"ERROR: Unrecognized bb in function call\n";
+				exit(1);
+			}
+			return BBMap[id];
+		}
 		public:
 			static char ID; // Class identification, replacement for typeinfo
 			OnDemandBBTrace(const std::string& filename="") : ModulePass(ID),Filename(filename) {
@@ -124,11 +138,13 @@ namespace {
 				}
 				std::unordered_map<BasicBlock*, int> reverse_map;
 				label_basic_blocks(M,BBMap, reverse_map); 
-				
+
 			}
 			virtual const char *getPassName() const {
 				return "OnDemandBBTrace";
 			}
+
+
 			virtual bool startBBTraceStream() {
 				if(started) {
 					dbgs()<<"Failed start\n";
@@ -143,23 +159,37 @@ namespace {
 					return true;
 				}
 			}
-			virtual BasicBlock* BBTraceStreamNext() {
+
+			virtual BBTraceStream::Packet BBTraceStreamNext() {
+
+				BBTraceStream::Packet packet;
 				if(buffer.empty())  {
-					return NULL;
-				}
-				uint64_t bbid=*it++;
-				BasicBlock* result;
-				if(bbid==BBTraceStream::FunCallID) {
-					result=BBTraceStream::FunCallTag;
-				} else if(bbid==BBTraceStream::FunRetID) {
-					result=BBTraceStream::FunRetTag;
+					packet.ptype=BBTraceStream::PacketType::BBEOF;
 				} else {
-					result=BBMap[bbid];
+					uint64_t bbid=getNextUint ();
+
+					if(bbid==BBTraceStream::MemOpID) {
+						if(buffer.empty()) {
+							errs()<<"Error, truncated MemOp packet in Basic Block trace stream\n";
+							exit(1);
+						}
+						packet.ptype=BBTraceStream::PacketType::MemOp;
+						packet.MemAddr=getNextUint();
+					}else if(bbid==BBTraceStream::FunCallID) {
+						if(buffer.empty()) {
+							errs()<<"Error, truncated FunCall packet in Basic Block trace stream\n";
+							exit(1);
+						}
+						packet.ptype=BBTraceStream::FunCall;
+						packet.BB=uintToBB (getNextUint());
+					} else if(bbid==BBTraceStream::FunRetID) {
+						packet.ptype=BBTraceStream::FunRet;
+					} else {
+						packet.ptype=BBTraceStream::BB;
+						packet.BB=uintToBB(bbid);
+					}
 				}
-				if(it==buffer.end()) {
-					loadNextBBTracePacket();
-				}
-				return result;
+				return packet;
 			}
 	};
 }
